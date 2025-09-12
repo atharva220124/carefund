@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donater Dashboard - CareFund</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: relative;
+        }
+        .top-right-links {
+            position: absolute;
+            top: 2rem;
+            right: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .view-profile-link {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #4a5568;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .view-profile-link:hover {
+            color: #2c3e50;
+        }
+        .header-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            text-align: center;
+        }
+        .logo-and-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .logo-and-title {
+                flex-direction: row;
+                align-items: flex-start;
+                text-align: left;
+            }
+        }
+        .logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+        .main-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-top: 0.5rem;
+        }
+        .user-greeting {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .how-we-help-section {
+            background-color: #f8f9fa;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .how-we-help-section h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+        .help-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+        }
+        .help-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .help-card:hover {
+            transform: translateY(-5px);
+        }
+        .help-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .help-card h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .help-card p {
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+        .donations-table-container, .about-team-section {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            text-align: left;
+        }
+        .donations-table-container h2, .about-team-section h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .donations-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .donations-table th, .donations-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .donations-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .donations-table tr:hover {
+            background-color: #f0f4f8;
+        }
+        .live-causes-section {
+            background-image: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .live-causes-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .live-causes-card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+        }
+        .live-cause-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: left;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .live-cause-card:hover {
+            transform: translateY(-5px);
+        }
+        .live-cause-card h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .live-cause-card p {
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+        .live-cause-card .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            margin-top: 1rem;
+        }
+        .live-cause-card .progress-fill {
+            height: 100%;
+            width: 50%; /* Example width, will be dynamic */
+            background-image: linear-gradient(90deg, #34d399, #10b981);
+            border-radius: 9999px;
+        }
+        .action-buttons {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        @media (min-width: 640px) {
+            .action-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .action-button {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .action-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        .donate-button {
+            background-image: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .support-button {
+            background-image: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .logout-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1rem auto;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        .map-container {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+            height: 300px;
+        }
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .about-team-section {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            text-align: left;
+        }
+        .about-team-section h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .team-members-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .team-member-card {
+            background-color: #f8f9fa;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            max-width: 350px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.03);
+        }
+        .team-member-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1rem auto;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chat-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-image: linear-gradient(135deg, #1b7e94, #2193b0);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .chat-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        .chat-modal {
+            position: fixed;
+            bottom: 90px;
+            right: 2rem;
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+        .chat-header {
+            background-image: linear-gradient(135deg, #2193b0, #6dd5ed);
+            color: white;
+            padding: 1rem;
+            font-weight: 700;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-body {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .chat-message {
+            max-width: 80%;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            text-align: left;
+            line-height: 1.4;
+        }
+        .chat-message.user {
+            background-color: #2193b0;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .chat-message.bot {
+            background-color: #e2e8f0;
+            color: #2c3e50;
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem;
+        }
+        .chat-input-container {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .chat-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid #dcdfe6;
+            transition: all 0.3s ease;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: #2193b0;
+        }
+        .chat-send-button {
+            background: #2193b0;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .chat-send-button:hover {
+            background: #1b7e94;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="top-right-links">
+		    
+            <a href="my-donations.html" class="view-profile-link">My Donations</a>
+            <a href="donater-login.html" class="logout-button">Logout</a>
+        </div>
+        <div class="header-section">
+            <div class="logo-and-title">
+                <img src="logo.jpeg" alt="CareFund Logo" class="logo">
+                <div>
+                    <h1 class="main-title">CareFund</h1>
+                    <p class="subtitle mt-1">गरजवंतांसाठी मदतीचा हात</p>
+                </div>
+            </div>
+            <h2 class="user-greeting" id="user-greeting">Welcome back, Donater!</h2>
+        </div>
+        
+        <div class="how-we-help-section">
+            <h3 class="text-xl font-bold">How CareFund Helps</h3>
+            <div class="help-cards-container">
+                <div class="help-card">
+                    <img src="Helpinghand.png" alt="Helping the Needy">
+                    <h4>Helping the Needy</h4>
+                    <p>We collect donations to support food, clothing, and care for poor families, ensuring dignity and basic living standards.</p>
+                </div>
+                <div class="help-card">
+                    <img src="Medicalhelp.png" alt="Medical Help">
+                    <h4>Medical Help</h4>
+                    <p>We assist patients who cannot afford treatment by funding urgent hospital bills and life-saving procedures.</p>
+                </div>
+                <div class="help-card">
+                    <img src="Education.png" alt="Education for All">
+                    <h4>Education for All</h4>
+                    <p>We help students in need with school fees, books, and educational resources to build a better future.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="live-causes-section">
+            <h3 class="flex items-center justify-center gap-2 text-xl font-bold">❤️ Live Causes Needing Support</h3>
+            <div id="live-causes-container" class="live-causes-card-container">
+                <p class="italic text-gray-500">No active cases right now. Your donation will soon help someone in real need.</p>
+            </div>
+        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About CareFund & Team</title>
+    <!-- Use Tailwind CSS for professional styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            color: #1a202c;
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevents horizontal scroll from animations */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .team-member-card img {
+            object-fit: cover;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .team-member-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .team-member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            background-color: #e0e7ff; /* A lighter shade of blue on hover */
+        }
+
+        /* Subtle animation for content sections */
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-on-load {
+            animation: fadeInSlideUp 0.8s ease-out both;
+        }
+        
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        .delay-5 { animation-delay: 1s; }
+		.contact-section {
+    font-family: Arial, sans-serif;
+    padding: 60px 20px;
+    background-color: #f8f9fa; /* Light gray background */
+}
+
+.contact-container {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.contact-heading {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.contact-subheading {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 40px;
+}
+
+.contact-info-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    text-align: left;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 280px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.contact-item .icon {
+    font-size: 1.5rem;
+    color: #007bff; /* Blue for the icon */
+}
+
+.contact-item p {
+    margin: 0;
+    font-size: 1rem;
+    color: #444;
+}
+
+.contact-details strong {
+    color: #000;
+}
+
+.map-container {
+    flex: 2;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.map-container iframe {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contact-info-wrapper {
+        flex-direction: column;
+    }
+
+    .contact-details, .map-container {
+        width: 100%;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="py-12 md:py-20 text-center animate-on-load">
+        <!-- Main heading with a clean, professional feel -->
+        <h2 class="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight">
+            About CareFund & Our Team
+        </h2>
+        <p class="mt-4 text-xl text-gray-600">
+            Bridging the gap between compassion and community needs.
+        </p>
+    </div>
+
+    <!-- Main content container now uses a single column -->
+    <div class="space-y-16 text-left">
+        <!-- About CareFund Section -->
+        <div class="animate-on-load delay-1">
+            <div class="bg-white p-8 sm:p-12 rounded-3xl shadow-lg border border-gray-200">
+                <div class="flex items-center gap-4 text-2xl font-bold text-gray-800 mb-6">
+                    <!-- SVG icon for a modern look -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l2.6 7.8h8.4l-6.8 4.9 2.6 7.8-6.8-4.9-6.8 4.9 2.6-7.8-6.8-4.9h8.4z"/>
+                    </svg>
+                    <span>Our Mission</span>
+                </div>
+                <p class="text-gray-700 text-lg">
+                    At CareFund, we believe that no one should be denied help just because they can’t afford it. Founded with compassion at its core, CareFund is a community-driven initiative dedicated to providing critical support where it's needed most.
+                </p>
+                <ul class="mt-8 space-y-4 text-gray-600 text-base">
+                    <li class="flex items-start gap-3">
+                        <span class="text-blue-500 text-2xl leading-none">✓</span>
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-800">Educational Aid:</span>
+                            <span> Helping students overcome financial barriers to their education.</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-blue-500 text-2xl leading-none">✓</span>
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-800">Medical Support:</span>
+                            <span> Providing funds for hospitalized patients in need of urgent treatment.</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-blue-500 text-2xl leading-none">✓</span>
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-800">Community Essentials:</span>
+                            <span> Supporting underprivileged families with basic needs like food and shelter.</span>
+                        </div>
+                    </li>
+                </ul>
+                <p class="mt-8 text-gray-700 text-lg">
+                    We aim to bridge the gap between those who want to help and those who desperately need it. Every contribution counts, whether it's a small donation or simply spreading the word, as we work together to build a more caring community.
+                </p>
+            </div>
+        </div>
+
+        <!-- Meet Our Team Section -->
+        <div class="animate-on-load delay-2">
+            <h3 class="flex items-center gap-4 text-2xl font-bold text-gray-800 mb-6">
+                <span>Meet Our Team</span>
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <!-- Atharva Naik -->
+                <div class="team-member-card bg-white p-6 rounded-3xl shadow-lg border border-gray-200 text-center">
+                    <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-600">
+                        <!-- Placeholder image for a professional look -->
+                        <img src="Atharva.jpeg" alt="Atharva Naik" class="rounded-full w-full h-full object-cover"/>
+                    </div>
+                    <p class="font-bold text-lg text-gray-900">Atharva Naik</p>
+                    <span class="block text-sm text-blue-600 font-medium mt-1">Founder & Lead Volunteer</span>
+                    <p class="mt-4 text-sm text-gray-600">Social worker focused on providing financial aid for medical, education and daily needs to underprivileged people.</p>
+                </div>
+                <!-- Diptesh Gaikwad -->
+                <div class="team-member-card bg-white p-6 rounded-3xl shadow-lg border border-gray-200 text-center">
+                    <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-600">
+                        <!-- Placeholder image for a professional look -->
+                          <img src="Diptesh.jpeg" alt="Diptesh Gaikwad" class="rounded-full w-full h-full object-cover"/>
+                    </div>
+                    <p class="font-bold text-lg text-gray-900">Diptesh Gaikwad</p>
+                    <span class="block text-sm text-blue-600 font-medium mt-1">Operations Volunteer</span>
+                    <p class="mt-4 text-sm text-gray-600">Coordinates aid requests and donor support.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action Section -->
+    <div class="mt-20 text-center animate-on-load delay-3">
+        <p class="text-3xl font-bold text-gray-900">Donate today. Support tomorrow.</p>
+        <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <a href="donate.html" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105">
+                Make a New Donation
+            </a>
+            <a href="https://wa.me/919309490608?text=Hello%2C%20I%20have%20a%20question%20about%20CareFund." class="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition duration-300 shadow-md transform hover:scale-105" target="_blank">
+                Customer Support
+            </a>
+        </div>
+    </div>
+</div>
+
+       <section class="contact-section">
+    <div class="contact-container">
+        <h2 class="contact-heading">Get In Touch</h2>
+        <p class="contact-subheading">We'd love to hear from you. Reach out to us through any of the channels below.</p>
+
+        <div class="contact-info-wrapper">
+            <div class="contact-details">
+                <div class="contact-item">
+                    <span class="icon">📱</span>
+                    <p><strong>WhatsApp:</strong> +91 9309490608</p>
+                </div>
+                <div class="contact-item">
+                    <span class="icon">📧</span>
+                    <p><strong>Email:</strong> carefund24@gmail.com</p>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d469.5156966813981!2d72.78404163010576!3d19.707277224447346!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be71c924189eb5d%3A0x422ad2d28162ca76!2sSt.%20John%20College%20of%20Humanities%20and%20Sciences!5e0!3m2!1sen!2sin!4v1757679163159!5m2!1sen!2sin"
+                        width="100%"
+                        height="300"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <button class="chat-button" onclick="toggleChatModal()">💬</button>
+    <div id="chat-modal" class="chat-modal">
+        <div class="chat-header">
+            <span>CareFund AI Chatbot</span>
+            <button onclick="toggleChatModal()">X</button>
+        </div>
+        <div id="chat-body" class="chat-body">
+            <div class="chat-message bot">Hello! I am the CareFund AI Assistant. I can answer questions about our mission, how to donate, and more. How can I help you?</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Ask me a question...">
+            <button class="chat-send-button" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const donater = JSON.parse(localStorage.getItem('donater'));
+            if (donater && donater.name) {
+                document.getElementById('user-greeting').textContent = `Welcome back, ${donater.name}!`;
+            }
+
+            async function fetchLiveCauses() {
+                const liveCausesContainer = document.getElementById('live-causes-container');
+                try {
+                    const response = await fetch(window.location.origin + '/api/public/cases');
+                    if (!response.ok) throw new Error('Failed to fetch live causes.');
+                    const cases = await response.json();
+                    
+                    liveCausesContainer.innerHTML = '';
+                    if (cases.length === 0) {
+                        liveCausesContainer.innerHTML = `<p class="italic text-gray-500">No active cases right now. Your donation will soon help someone in real need.</p>`;
+                    } else {
+                        cases.forEach(c => {
+                            const caseCard = document.createElement('div');
+                            caseCard.className = 'live-cause-card p-4 border rounded-xl flex flex-col gap-2';
+                            
+                            let imagesHtml = '';
+                            if (c.images && c.images.length > 0) {
+                                imagesHtml = c.images.map(img => `<img src="${img}" alt="Case Image" class="w-full h-32 object-cover rounded-lg">`).join('');
+                            }
+                            
+                            caseCard.innerHTML = `
+                                <div class="flex-grow">
+                                    <h4 class="font-bold text-lg">${c.patientName}</h4>
+                                    <p class="text-sm text-gray-600"><strong>Condition:</strong> ${c.medicalCondition}</p>
+                                    <p class="text-sm text-gray-600"><strong>Requested:</strong> ₹ ${c.requestedAmount}</p>
+                                    <p class="text-sm mt-2 text-gray-500">${c.description || ''}</p>
+                                    <div class="mt-4">${imagesHtml}</div>
+                                </div>
+                                <a href="https://wa.me/919309490608?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20the%20case%20of%20${c.patientName}%20with%20ID%20${c.id}" class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition" target="_blank">Know More</a>
+                            `;
+                            liveCausesContainer.appendChild(caseCard);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching live causes:', error);
+                    liveCausesContainer.innerHTML = `<p class="text-red-500">Failed to load cases. Please try again later.</p>`;
+                }
+            }
+            
+            fetchLiveCauses();
+
+            document.getElementById('chat-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        function toggleChatModal() {
+            const modal = document.getElementById('chat-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // CORRECTED CHATBOT CODE:
+let chatHistory = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // ... (your existing code) ...
+
+    // Add the initial bot message to the UI only, not the chatHistory array
+    const chatBody = document.getElementById('chat-body');
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'chat-message bot';
+    welcomeDiv.textContent = 'Hello! I am the CareFund AI Assistant. I can answer questions about our mission, how to donate, and more. How can I help you?';
+    chatBody.appendChild(welcomeDiv);
+});
+
+        async function sendMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const chatBody = document.getElementById('chat-body');
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            // Add user message to UI
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-message user';
+            userDiv.textContent = msg;
+            chatBody.appendChild(userDiv);
+            chatInput.value = '';
+
+            // Add user message to history
+            chatHistory.push({ role: "user", parts: [{ text: msg }] });
+
+            // Add 'thinking' message
+            const botDiv = document.createElement('div');
+            botDiv.className = 'chat-message bot';
+            botDiv.textContent = 'Thinking...';
+            chatBody.appendChild(botDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const res = await fetch(window.location.origin + '/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ history: chatHistory })
+                });
+                const data = await res.json();
+                const botResponse = data.response;
+
+                // Update bot message and add to history
+                botDiv.textContent = botResponse;
+                chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+
+            } catch (e) {
+                console.error('Chatbot error:', e);
+                botDiv.textContent = 'Sorry, the server is unavailable.';
+            }
+
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+</body>
+</html>

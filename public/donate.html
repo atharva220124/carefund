@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Our Mission - CareFund</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23e0e0e0" fill-opacity="0.3" d="M0,160L48,165.3C96,171,192,181,288,160C384,139,480,85,576,90.7C672,96,768,160,864,170.7C960,181,1056,139,1152,117.3C1248,96,1344,96,1392,96L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: bottom;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            width: 420px;
+            max-width: 90%;
+            text-align: center;
+            animation: slideInUp 0.9s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(135deg, #6dd5ed, #2193b0);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            z-index: 0;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 32px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: #2193b0;
+            border-radius: 5px;
+        }
+
+        .heart-icon {
+            color: #e74c3c;
+            margin-left: 10px;
+            animation: pulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #dcdfe6;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2193b0;
+            box-shadow: 0 0 0 4px rgba(33, 147, 176, 0.3);
+        }
+
+        .quick-donate-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quick-donate-buttons button {
+            background: #f0f2f5;
+            color: #2c3e50;
+            border: 1px solid #dcdfe6;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-donate-buttons button:hover,
+        .quick-donate-buttons button.selected {
+            background: #2193b0;
+            color: white;
+            border-color: #2193b0;
+        }
+
+        button[type="submit"] {
+            margin-top: 40px;
+            width: 100%;
+            padding: 16px;
+            background: #2193b0;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(33, 147, 176, 0.3);
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: #1b7e94;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(33, 147, 176, 0.4);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(33, 147, 176, 0.2);
+        }
+        
+        .message-box {
+            display: none;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Support Our Mission <span class="heart-icon">❤️</span></h1>
+        <form action="/donate" method="POST">
+            <label for="name">Your Full Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g., Jane Doe" required>
+
+            <label for="email">Your Email Address</label>
+            <input type="email" id="email" name="email" placeholder="e.g., jane.doe@example.com" required>
+            <input type="hidden" id="donator-email" name="donatorEmail">
+
+            <label for="amount">Donation Amount (INR)</label>
+            <input type="number" id="amount" name="amount" placeholder="e.g., 1000" min="1" required>
+            
+            <div class="quick-donate-buttons">
+                <button type="button" onclick="setAmount(100)">₹100</button>
+                <button type="button" onclick="setAmount(500)">₹500</button>
+                <button type="button" onclick="setAmount(1000)">₹1000</button>
+            </div>
+
+            <button type="submit">Donate Now</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const donator = JSON.parse(localStorage.getItem('donater'));
+            if (donator && donator.name && donator.email) {
+                document.getElementById('name').value = donator.name;
+                document.getElementById('email').value = donator.email;
+                document.getElementById('donator-email').value = donator.email;
+                document.getElementById('name').readOnly = true;
+                document.getElementById('email').readOnly = true;
+            }
+        });
+
+        function setAmount(value) {
+            const amountInput = document.getElementById('amount');
+            amountInput.value = value;
+            
+            const buttons = document.querySelectorAll('.quick-donate-buttons button');
+            buttons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+    </script>
+</body>
+</html>
