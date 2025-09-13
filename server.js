@@ -1,4 +1,4 @@
-// Import necessary modules
+// Import necessary modules 
 const express = require("express");
 const bodyParser = require("body-parser");
 const QRCode = require("qrcode");
@@ -8,6 +8,8 @@ const { OAuth2Client } = require('google-auth-library');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const multer = require('multer');
 const cors = require('cors');
+// --- NEW: Import Mongoose for MongoDB connection ---
+const mongoose = require('mongoose');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -18,6 +20,29 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use(cors());
 
+// --- NEW: Connect to MongoDB Atlas via Mongoose ---
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log("MongoDB connected successfully.");
+}).catch(err => {
+    console.error("MongoDB connection error:", err);
+});
+
+// --- NEW: Define a Mongoose Schema and Model for Cases ---
+const caseSchema = new mongoose.Schema({
+    patient_name: String,
+    medical_condition: String,
+    description: String,
+    requested_amount: Number,
+    images: [String], // Array of image URLs
+    status: { type: String, default: 'Pending' },
+    date_added: { type: Date, default: Date.now }
+});
+
+const Case = mongoose.model('Case', caseSchema);
+
 // --- FIX: Initialize Google Generative AI once at the start ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -26,9 +51,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Temporary in-memory databases
+// Temporary in-memory databases (These will be replaced by Postgres for cases)
 const donatorsDB = [];
-const casesDB = [];
 const donationsDB = [];
 
 // Redirect the root URL to the dashboard
@@ -52,8 +76,8 @@ app.post("/donate", async (req, res) => {
             amount: amount,
             date: new Date().toISOString(),
             status: 'Pending',
-            rejectionReason: '', // Added field
-            transactionId: ''    // Added field
+            rejectionReason: '',
+            transactionId: ''
         });
 
         res.send(`
@@ -225,68 +249,78 @@ app.post('/api/admin/reject-donation', (req, res) => {
     }
 });
 
+// --- UPDATED: New logic to save and retrieve cases from MongoDB Atlas ---
 app.route('/api/admin/cases')
-    .get((req, res) => {
-        res.json(casesDB);
+    .get(async (req, res) => {
+        try {
+            // Retrieve all cases from the 'cases' collection
+            const cases = await Case.find().sort({ date_added: -1 });
+            res.json(cases);
+        } catch (error) {
+            console.error('Error fetching cases from database:', error);
+            res.status(500).json({ message: 'Error fetching cases.' });
+        }
     })
-    .post(upload.array('images', 5), (req, res) => {
-        // --- FIX: Store file information as an array of buffers (in-memory) ---
-        // Vercel's filesystem is read-only, so we cannot save files.
-        // req.files is now an array of objects with a 'buffer' property.
-        const imageBuffers = req.files.map(file => file.buffer);
-        console.log(`Received ${imageBuffers.length} images in memory.`);
-        
-        // --- Note: For a real app, you would upload these buffers to cloud storage like AWS S3 or Vercel Blob here ---
-        
-        const newCase = {
-            id: casesDB.length + 1,
-            patientName: req.body.patientName,
-            medicalCondition: req.body.medicalCondition,
-            description: req.body.description,
-            requestedAmount: req.body.requestedAmount,
-            // We cannot store file paths, so we'll just log that we received them
-            images: req.files.map(file => ({
-                originalname: file.originalname,
-                mimetype: file.mimetype,
-                size: file.size
-            })),
-            status: 'Pending',
-            dateAdded: new Date().toISOString()
-        };
-        casesDB.push(newCase);
-        console.log('New case added:', newCase);
-        res.status(201).json({ message: 'Case added successfully!', case: newCase });
+    .post(upload.array('images', 5), async (req, res) => {
+        try {
+            // Placeholder for image upload (Vercel Blob)
+            const uploadPromises = req.files.map(file => put(file.originalname, file.buffer, { access: 'public' }));
+            const uploadedBlobs = await Promise.all(uploadPromises);
+            const imageUrls = uploadedBlobs.map(blob => blob.url);
+
+            const { patientName, medicalCondition, description, requestedAmount } = req.body;
+
+            // Create a new Case document and save it to MongoDB
+            const newCase = new Case({
+                patient_name: patientName,
+                medical_condition: medicalCondition,
+                description: description,
+                requested_amount: requestedAmount,
+                images: imageUrls,
+            });
+
+            const savedCase = await newCase.save();
+
+            console.log('New case added with image URLs:', savedCase);
+            res.status(201).json({ message: 'Case added successfully!', case: savedCase });
+
+        } catch (error) {
+            console.error('Error adding case or uploading images:', error);
+            res.status(500).json({ message: 'Error adding case. Please try again.' });
+        }
     });
 
-app.get('/api/public/cases', (req, res) => {
-    res.json(casesDB);
+// --- UPDATED: Retrieve cases from MongoDB Atlas for the public page ---
+app.get('/api/public/cases', async (req, res) => {
+    try {
+        const cases = await Case.find().sort({ date_added: -1 });
+        res.json(cases);
+    } catch (error) {
+        console.error('Error fetching public cases from database:', error);
+        res.status(500).json({ message: 'Error fetching public cases.' });
+    }
 });
 
 // --- UPDATED API ENDPOINT ---
 app.post('/api/my-donations', (req, res) => {
     const userEmail = req.body.email;
-    // This line was changed to remove the status filter
     const myDonations = donationsDB.filter(d => d.email === userEmail);
     res.json(myDonations);
 });
 
 // --- FIX: Corrected AI Chatbot route ---
-// This code is a direct replacement for your existing app.post('/api/chat', ...) route.
 app.post('/api/chat', async (req, res) => {
     try {
         const { history } = req.body;
         
-        // Ensure history is provided and is an array
         if (!Array.isArray(history) || history.length === 0) {
             return res.status(400).json({ response: 'Invalid request: Chat history is required and cannot be empty.' });
         }
         
-        // --- IMPORTANT FIX: The first message must always be from the 'user' ---
         if (history[0].role === 'model') {
-            history.shift(); // Remove the leading model message to prevent API error
+            history.shift();
         }
         
-        // Start a new chat session with the corrected history
         const chat = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }).startChat({
             history: history,
             generationConfig: {
@@ -294,16 +328,11 @@ app.post('/api/chat', async (req, res) => {
             },
         });
         
-        // Get the last message from the history to send
-        // Note: You must send the entire 'parts' array, not just the text string.
         const userQueryParts = history[history.length - 1].parts;
-        
-        // Send the message and get a response from the AI
         const result = await chat.sendMessage(userQueryParts);
         const response = await result.response;
         const text = response.text();
         
-        // Send the AI's response back to the client
         res.json({ response: text });
 
     } catch (error) {

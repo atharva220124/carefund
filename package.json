@@ -13,10 +13,12 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@vercel/blob": "^1.1.1",
+    "@vercel/postgres": "^0.10.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "google-auth-library": "^10.3.0",
+    "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "qrcode": "^1.5.4",
     "serverless-http": "^4.0.0"
