@@ -15,6 +15,7 @@
             color: #333;
             min-height: 100vh;
             padding: 2rem;
+            line-height: 1.6;
         }
         .dashboard-container {
             max-width: 1200px;
@@ -90,14 +91,14 @@
             color: #2c3e50;
             margin-bottom: 0.5rem;
         }
-        .how-we-help-section {
+        .how-we-help-section, .about-section, .contact-section {
             background-color: #f8f9fa;
             border-radius: 1.5rem;
             padding: 2.5rem;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
-        .how-we-help-section h3 {
+        .how-we-help-section h3, .about-section h2, .contact-section h2 {
             font-size: 1.75rem;
             font-weight: 700;
             color: #2c3e50;
@@ -287,19 +288,6 @@
             height: 100%;
             border: 0;
         }
-        .about-team-section {
-            background-color: #ffffff;
-            border-radius: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-            text-align: left;
-        }
-        .about-team-section h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 1rem;
-        }
         .team-members-container {
             display: flex;
             flex-wrap: wrap;
@@ -314,6 +302,7 @@
             text-align: center;
             max-width: 350px;
             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
         }
         .team-member-card img {
             width: 120px;
@@ -428,12 +417,50 @@
         .chat-send-button:hover {
             background: #1b7e94;
         }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+        @media (min-width: 768px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .card {
+            background-image: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .call-to-action-section {
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            text-align: center;
+        }
+        .call-to-action-section h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <div class="top-right-links">
-		    
             <a href="my-donations.html" class="view-profile-link">My Donations</a>
             <a href="donater-login.html" class="logout-button">Logout</a>
         </div>
@@ -448,6 +475,18 @@
             <h2 class="user-greeting" id="user-greeting">Welcome back, Donater!</h2>
         </div>
         
+        <!-- Summary Cards Section -->
+        <div class="summary-cards">
+            <div class="card">
+                <p class="card-title">Total Donations Collected by CareFund</p>
+                <p class="card-value" id="total-collected">₹ 0</p>
+            </div>
+            <div class="card">
+                <p class="card-title">Total Donators</p>
+                <p class="card-value" id="total-donators">0</p>
+            </div>
+        </div>
+
         <div class="how-we-help-section">
             <h3 class="text-xl font-bold">How CareFund Helps</h3>
             <div class="help-cards-container">
@@ -475,172 +514,14 @@
                 <p class="italic text-gray-500">No active cases right now. Your donation will soon help someone in real need.</p>
             </div>
         </div>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About CareFund & Team</title>
-    <!-- Use Tailwind CSS for professional styling and responsiveness -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fc;
-            color: #1a202c;
-            line-height: 1.6;
-            overflow-x: hidden; /* Prevents horizontal scroll from animations */
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        .team-member-card img {
-            object-fit: cover;
-            border-radius: 9999px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .team-member-card {
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .team-member-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            background-color: #e0e7ff; /* A lighter shade of blue on hover */
-        }
-
-        /* Subtle animation for content sections */
-        @keyframes fadeInSlideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-on-load {
-            animation: fadeInSlideUp 0.8s ease-out both;
-        }
         
-        .delay-1 { animation-delay: 0.2s; }
-        .delay-2 { animation-delay: 0.4s; }
-        .delay-3 { animation-delay: 0.6s; }
-        .delay-4 { animation-delay: 0.8s; }
-        .delay-5 { animation-delay: 1s; }
-		.contact-section {
-    font-family: Arial, sans-serif;
-    padding: 60px 20px;
-    background-color: #f8f9fa; /* Light gray background */
-}
-
-.contact-container {
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.contact-heading {
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.contact-subheading {
-    font-size: 1.1rem;
-    color: #555;
-    margin-bottom: 40px;
-}
-
-.contact-info-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 40px;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.contact-details {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    text-align: left;
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    flex: 1;
-    min-width: 280px;
-}
-
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.contact-item .icon {
-    font-size: 1.5rem;
-    color: #007bff; /* Blue for the icon */
-}
-
-.contact-item p {
-    margin: 0;
-    font-size: 1rem;
-    color: #444;
-}
-
-.contact-details strong {
-    color: #000;
-}
-
-.map-container {
-    flex: 2;
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.map-container iframe {
-    display: block;
-    width: 100%;
-    border-radius: 10px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .contact-info-wrapper {
-        flex-direction: column;
-    }
-
-    .contact-details, .map-container {
-        width: 100%;
-    }
-}
-
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="py-12 md:py-20 text-center animate-on-load">
-        <!-- Main heading with a clean, professional feel -->
-        <h2 class="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight">
-            About CareFund & Our Team
-        </h2>
-        <p class="mt-4 text-xl text-gray-600">
-            Bridging the gap between compassion and community needs.
-        </p>
-    </div>
-
-    <!-- Main content container now uses a single column -->
-    <div class="space-y-16 text-left">
-        <!-- About CareFund Section -->
-        <div class="animate-on-load delay-1">
-            <div class="bg-white p-8 sm:p-12 rounded-3xl shadow-lg border border-gray-200">
+        <div class="about-section">
+            <h2 class="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight">About CareFund & Our Team</h2>
+            <p class="mt-4 text-xl text-gray-600">
+                Bridging the gap between compassion and community needs.
+            </p>
+            <div class="mt-8 text-left bg-white p-8 sm:p-12 rounded-3xl shadow-lg border border-gray-200">
                 <div class="flex items-center gap-4 text-2xl font-bold text-gray-800 mb-6">
-                    <!-- SVG icon for a modern look -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2l2.6 7.8h8.4l-6.8 4.9 2.6 7.8-6.8-4.9-6.8 4.9 2.6-7.8-6.8-4.9h8.4z"/>
                     </svg>
@@ -676,18 +557,14 @@
                     We aim to bridge the gap between those who want to help and those who desperately need it. Every contribution counts, whether it's a small donation or simply spreading the word, as we work together to build a more caring community.
                 </p>
             </div>
-        </div>
-
-        <!-- Meet Our Team Section -->
-        <div class="animate-on-load delay-2">
-            <h3 class="flex items-center gap-4 text-2xl font-bold text-gray-800 mb-6">
+            
+            <h3 class="flex items-center gap-4 text-2xl font-bold text-gray-800 mt-12 mb-6">
                 <span>Meet Our Team</span>
             </h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <!-- Atharva Naik -->
                 <div class="team-member-card bg-white p-6 rounded-3xl shadow-lg border border-gray-200 text-center">
                     <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-600">
-                        <!-- Placeholder image for a professional look -->
                         <img src="Atharva.jpeg" alt="Atharva Naik" class="rounded-full w-full h-full object-cover"/>
                     </div>
                     <p class="font-bold text-lg text-gray-900">Atharva Naik</p>
@@ -697,8 +574,7 @@
                 <!-- Diptesh Gaikwad -->
                 <div class="team-member-card bg-white p-6 rounded-3xl shadow-lg border border-gray-200 text-center">
                     <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-600">
-                        <!-- Placeholder image for a professional look -->
-                          <img src="Diptesh.jpeg" alt="Diptesh Gaikwad" class="rounded-full w-full h-full object-cover"/>
+                        <img src="Diptesh.jpeg" alt="Diptesh Gaikwad" class="rounded-full w-full h-full object-cover"/>
                     </div>
                     <p class="font-bold text-lg text-gray-900">Diptesh Gaikwad</p>
                     <span class="block text-sm text-blue-600 font-medium mt-1">Operations Volunteer</span>
@@ -706,53 +582,48 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Call to Action Section -->
-    <div class="mt-20 text-center animate-on-load delay-3">
-        <p class="text-3xl font-bold text-gray-900">Donate today. Support tomorrow.</p>
-        <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-            <a href="donate.html" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105">
-                Make a New Donation
-            </a>
-            <a href="https://wa.me/919309490608?text=Hello%2C%20I%20have%20a%20question%20about%20CareFund." class="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition duration-300 shadow-md transform hover:scale-105" target="_blank">
-                Customer Support
-            </a>
-        </div>
-    </div>
-</div>
-
-       <section class="contact-section">
-    <div class="contact-container">
-        <h2 class="contact-heading">Get In Touch</h2>
-        <p class="contact-subheading">We'd love to hear from you. Reach out to us through any of the channels below.</p>
-
-        <div class="contact-info-wrapper">
-            <div class="contact-details">
-                <div class="contact-item">
-                    <span class="icon">📱</span>
-                    <p><strong>WhatsApp:</strong> +91 9309490608</p>
-                </div>
-                <div class="contact-item">
-                    <span class="icon">📧</span>
-                    <p><strong>Email:</strong> carefund24@gmail.com</p>
-                </div>
-            </div>
-
-            <div class="map-container">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d469.5156966813981!2d72.78404163010576!3d19.707277224447346!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be71c924189eb5d%3A0x422ad2d28162ca76!2sSt.%20John%20College%20of%20Humanities%20and%20Sciences!5e0!3m2!1sen!2sin!4v1757679163159!5m2!1sen!2sin"
-                        width="100%"
-                        height="300"
-                        style="border:0;"
-                        allowfullscreen=""
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
+        <!-- Call to Action Section (Re-added) -->
+        <div class="call-to-action-section">
+            <p class="text-3xl font-bold text-gray-900">Donate today. Support tomorrow.</p>
+            <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="donate.html" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105">
+                    Make a New Donation
+                </a>
+                <a href="https://wa.me/919309490608?text=Hello%2C%20I%20have%20a%20question%20about%20CareFund." class="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition duration-300 shadow-md transform hover:scale-105" target="_blank">
+                    Customer Support
+                </a>
             </div>
         </div>
-    </div>
-</section>
 
+        <section class="contact-section">
+            <h2 class="contact-heading">Get In Touch</h2>
+            <p class="contact-subheading">We'd love to hear from you. Reach out to us through any of the channels below.</p>
+            <div class="contact-info-wrapper flex flex-col md:flex-row gap-8 justify-center items-center">
+                <div class="contact-details bg-white p-8 rounded-xl shadow-lg flex flex-col gap-6 w-full max-w-sm">
+                    <div class="contact-item flex items-center gap-4">
+                        <span class="text-2xl text-blue-500">📱</span>
+                        <p class="text-gray-700"><strong>WhatsApp:</strong> +91 9309490608</p>
+                    </div>
+                    <div class="contact-item flex items-center gap-4">
+                        <span class="text-2xl text-blue-500">📧</span>
+                        <p class="text-gray-700"><strong>Email:</strong> carefund24@gmail.com</p>
+                    </div>
+                </div>
+                <div class="map-container bg-white rounded-xl overflow-hidden shadow-lg w-full max-w-2xl h-80">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d469.5156966813981!2d72.78404163010576!3d19.707277224447346!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be71c924189eb5d%3A0x422ad2d28162ca76!2sSt.%20John%20College%20of%20Humanities%20and%20Sciences!5e0!3m2!1sen!2sin!4v1757679163159!5m2!1sen!2sin"
+                            width="100%"
+                            height="100%"
+                            style="border:0;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+    </div>
 
     <button class="chat-button" onclick="toggleChatModal()">💬</button>
     <div id="chat-modal" class="chat-modal">
@@ -770,16 +641,47 @@
     </div>
 
     <script>
+        const API_ORIGIN = window.location.origin;
+
         document.addEventListener('DOMContentLoaded', async () => {
             const donater = JSON.parse(localStorage.getItem('donater'));
             if (donater && donater.name) {
                 document.getElementById('user-greeting').textContent = `Welcome back, ${donater.name}!`;
             }
 
+            // Function to fetch and update dashboard totals
+            const fetchDashboardTotals = async () => {
+                try {
+                    // Fetch donations data
+                    const donationsResponse = await fetch(API_ORIGIN + '/api/admin/donations');
+                    if (!donationsResponse.ok) throw new Error('Failed to fetch donations data.');
+                    const donations = await donationsResponse.json();
+
+                    // Calculate total collected amount from approved donations
+                    const totalAmount = donations
+                        .filter(d => d.status === 'Approved')
+                        .reduce((sum, d) => sum + parseInt(d.amount), 0);
+                    document.getElementById('total-collected').textContent = `₹ ${totalAmount.toLocaleString()}`;
+
+                    // Fetch donators data
+                    const donatorsResponse = await fetch(API_ORIGIN + '/api/admin/donators');
+                    if (!donatorsResponse.ok) throw new Error('Failed to fetch donator data.');
+                    const donators = await donatorsResponse.json();
+                    document.getElementById('total-donators').textContent = donators.length;
+
+                } catch (error) {
+                    console.error('Error fetching dashboard totals:', error);
+                }
+            };
+
+            // Call the new function
+            fetchDashboardTotals();
+
+            // Existing function to fetch live causes
             async function fetchLiveCauses() {
                 const liveCausesContainer = document.getElementById('live-causes-container');
                 try {
-                    const response = await fetch(window.location.origin + '/api/public/cases');
+                    const response = await fetch(API_ORIGIN + '/api/public/cases');
                     if (!response.ok) throw new Error('Failed to fetch live causes.');
                     const cases = await response.json();
                     
@@ -814,7 +716,6 @@
                     liveCausesContainer.innerHTML = `<p class="text-red-500">Failed to load cases. Please try again later.</p>`;
                 }
             }
-            
             fetchLiveCauses();
 
             document.getElementById('chat-input').addEventListener('keypress', (e) => {
@@ -829,19 +730,7 @@
             modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        // CORRECTED CHATBOT CODE:
-let chatHistory = [];
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // ... (your existing code) ...
-
-    // Add the initial bot message to the UI only, not the chatHistory array
-    const chatBody = document.getElementById('chat-body');
-    const welcomeDiv = document.createElement('div');
-    welcomeDiv.className = 'chat-message bot';
-    welcomeDiv.textContent = 'Hello! I am the CareFund AI Assistant. I can answer questions about our mission, how to donate, and more. How can I help you?';
-    chatBody.appendChild(welcomeDiv);
-});
+        let chatHistory = [];
 
         async function sendMessage() {
             const chatInput = document.getElementById('chat-input');
@@ -849,17 +738,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const msg = chatInput.value.trim();
             if (!msg) return;
 
-            // Add user message to UI
             const userDiv = document.createElement('div');
             userDiv.className = 'chat-message user';
             userDiv.textContent = msg;
             chatBody.appendChild(userDiv);
             chatInput.value = '';
 
-            // Add user message to history
             chatHistory.push({ role: "user", parts: [{ text: msg }] });
 
-            // Add 'thinking' message
             const botDiv = document.createElement('div');
             botDiv.className = 'chat-message bot';
             botDiv.textContent = 'Thinking...';
@@ -867,7 +753,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             chatBody.scrollTop = chatBody.scrollHeight;
 
             try {
-                const res = await fetch(window.location.origin + '/api/chat', {
+                const res = await fetch(API_ORIGIN + '/api/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ history: chatHistory })
@@ -875,7 +761,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await res.json();
                 const botResponse = data.response;
 
-                // Update bot message and add to history
                 botDiv.textContent = botResponse;
                 chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
 
