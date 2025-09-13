@@ -8,6 +8,8 @@ const { OAuth2Client } = require('google-auth-library');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const multer = require('multer');
 const cors = require('cors');
+// --- NEW: Import Vercel Blob storage ---
+const { put } = require('@vercel/blob');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -225,37 +227,41 @@ app.post('/api/admin/reject-donation', (req, res) => {
     }
 });
 
+// --- UPDATED: New logic to upload images to Vercel Blob ---
 app.route('/api/admin/cases')
     .get((req, res) => {
         res.json(casesDB);
     })
-    .post(upload.array('images', 5), (req, res) => {
-        // --- FIX: Store file information as an array of buffers (in-memory) ---
-        // Vercel's filesystem is read-only, so we cannot save files.
-        // req.files is now an array of objects with a 'buffer' property.
-        const imageBuffers = req.files.map(file => file.buffer);
-        console.log(`Received ${imageBuffers.length} images in memory.`);
-        
-        // --- Note: For a real app, you would upload these buffers to cloud storage like AWS S3 or Vercel Blob here ---
-        
-        const newCase = {
-            id: casesDB.length + 1,
-            patientName: req.body.patientName,
-            medicalCondition: req.body.medicalCondition,
-            description: req.body.description,
-            requestedAmount: req.body.requestedAmount,
-            // We cannot store file paths, so we'll just log that we received them
-            images: req.files.map(file => ({
-                originalname: file.originalname,
-                mimetype: file.mimetype,
-                size: file.size
-            })),
-            status: 'Pending',
-            dateAdded: new Date().toISOString()
-        };
-        casesDB.push(newCase);
-        console.log('New case added:', newCase);
-        res.status(201).json({ message: 'Case added successfully!', case: newCase });
+    .post(upload.array('images', 5), async (req, res) => {
+        try {
+            // Check if any files were uploaded
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ message: 'No images uploaded.' });
+            }
+
+            // Upload all images to Vercel Blob and collect their URLs
+            const uploadPromises = req.files.map(file => put(file.originalname, file.buffer, { access: 'public' }));
+            const uploadedBlobs = await Promise.all(uploadPromises);
+            const imageUrls = uploadedBlobs.map(blob => blob.url);
+
+            const newCase = {
+                id: casesDB.length + 1,
+                patientName: req.body.patientName,
+                medicalCondition: req.body.medicalCondition,
+                description: req.body.description,
+                requestedAmount: req.body.requestedAmount,
+                images: imageUrls, // Now storing the Vercel Blob URLs
+                status: 'Pending',
+                dateAdded: new Date().toISOString()
+            };
+            casesDB.push(newCase);
+            console.log('New case added with image URLs:', newCase);
+            res.status(201).json({ message: 'Case added successfully!', case: newCase });
+
+        } catch (error) {
+            console.error('Error adding case or uploading images:', error);
+            res.status(500).json({ message: 'Error adding case. Please try again.' });
+        }
     });
 
 app.get('/api/public/cases', (req, res) => {
