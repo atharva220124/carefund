@@ -21,8 +21,10 @@ app.use(cors());
 // --- FIX: Initialize Google Generative AI once at the start ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Set up Multer for file uploads
-const upload = multer({ dest: 'public/uploads/' });
+// --- FIX: Change Multer to use in-memory storage ---
+// This prevents the 'EROFS: read-only file system' error on Vercel.
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Temporary in-memory databases
 const donatorsDB = [];
@@ -228,13 +230,26 @@ app.route('/api/admin/cases')
         res.json(casesDB);
     })
     .post(upload.array('images', 5), (req, res) => {
+        // --- FIX: Store file information as an array of buffers (in-memory) ---
+        // Vercel's filesystem is read-only, so we cannot save files.
+        // req.files is now an array of objects with a 'buffer' property.
+        const imageBuffers = req.files.map(file => file.buffer);
+        console.log(`Received ${imageBuffers.length} images in memory.`);
+        
+        // --- Note: For a real app, you would upload these buffers to cloud storage like AWS S3 or Vercel Blob here ---
+        
         const newCase = {
             id: casesDB.length + 1,
             patientName: req.body.patientName,
             medicalCondition: req.body.medicalCondition,
             description: req.body.description,
             requestedAmount: req.body.requestedAmount,
-            images: req.files.map(file => `/uploads/${file.filename}`),
+            // We cannot store file paths, so we'll just log that we received them
+            images: req.files.map(file => ({
+                originalname: file.originalname,
+                mimetype: file.mimetype,
+                size: file.size
+            })),
             status: 'Pending',
             dateAdded: new Date().toISOString()
         };
@@ -266,15 +281,11 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ response: 'Invalid request: Chat history is required and cannot be empty.' });
         }
         
-        // --- IMPORTANT FIX START ---
-        // Check if the first message in the history is from the model.
-        // If it is, remove it to prevent the API error.
-        // The API must always start a new chat with a 'user' role message.
+        // --- IMPORTANT FIX: The first message must always be from the 'user' ---
         if (history[0].role === 'model') {
-            history.shift(); 
+            history.shift(); // Remove the leading model message to prevent API error
         }
-        // --- IMPORTANT FIX END ---
-
+        
         // Start a new chat session with the corrected history
         const chat = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }).startChat({
             history: history,
