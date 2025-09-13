@@ -10,6 +10,7 @@ const multer = require('multer');
 const cors = require('cors');
 // --- NEW: Import Mongoose for MongoDB connection ---
 const mongoose = require('mongoose');
+const { put } = require('@vercel/blob');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -40,8 +41,20 @@ const caseSchema = new mongoose.Schema({
     status: { type: String, default: 'Pending' },
     date_added: { type: Date, default: Date.now }
 });
-
 const Case = mongoose.model('Case', caseSchema);
+
+// --- NEW: Define a Mongoose Schema and Model for Donations ---
+const donationSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    amount: Number,
+    date: { type: Date, default: Date.now },
+    status: { type: String, default: 'Pending' },
+    rejectionReason: String,
+    transactionId: String,
+});
+const Donation = mongoose.model('Donation', donationSchema);
+
 
 // --- FIX: Initialize Google Generative AI once at the start ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -53,13 +66,13 @@ const upload = multer({ storage: storage });
 
 // Temporary in-memory databases (These will be replaced by Postgres for cases)
 const donatorsDB = [];
-const donationsDB = [];
 
 // Redirect the root URL to the dashboard
 app.get("/", (req, res) => {
     res.redirect("/dashboard");
 });
-// Route to handle donation form submission and generate QR
+
+// --- UPDATED: Route to handle donation form submission and save to MongoDB ---
 app.post("/donate", async (req, res) => {
     const { amount, name, email } = req.body;
     const upiLink = `upi://pay?pa=${process.env.UPI_ID}&pn=${encodeURIComponent(
@@ -68,17 +81,15 @@ app.post("/donate", async (req, res) => {
 
     try {
         const qrImage = await QRCode.toDataURL(upiLink);
-        // Simulate a successful payment and save the donation
-        donationsDB.push({
-            id: donationsDB.length + 1,
+        
+        // Create a new Donation document and save it to MongoDB
+        const newDonation = new Donation({
             name: name,
             email: email,
             amount: amount,
-            date: new Date().toISOString(),
-            status: 'Pending',
-            rejectionReason: '',
-            transactionId: ''
         });
+
+        const savedDonation = await newDonation.save();
 
         res.send(`
             <!DOCTYPE html>
@@ -219,33 +230,56 @@ app.get('/api/admin/donators', (req, res) => {
     res.json(donatorsDB);
 });
 
-app.get('/api/admin/donations', (req, res) => {
-    res.json(donationsDB);
-});
-
-// Updated endpoint for approving a donation
-app.post('/api/admin/approve-donation', (req, res) => {
-    const { id, transactionId } = req.body;
-    const donation = donationsDB.find(d => d.id == id);
-    if (donation) {
-        donation.status = 'Approved';
-        donation.transactionId = transactionId; // Set the transaction ID
-        res.status(200).json({ message: 'Donation approved successfully.' });
-    } else {
-        res.status(404).json({ message: 'Donation not found.' });
+// --- UPDATED: Fetch donations from MongoDB ---
+app.get('/api/admin/donations', async (req, res) => {
+    try {
+        const donations = await Donation.find().sort({ date: -1 });
+        res.json(donations);
+    } catch (error) {
+        console.error('Error fetching donations from database:', error);
+        res.status(500).json({ message: 'Error fetching donations.' });
     }
 });
 
-// Updated endpoint for rejecting a donation
-app.post('/api/admin/reject-donation', (req, res) => {
+// --- UPDATED: Endpoint for approving a donation in MongoDB ---
+app.post('/api/admin/approve-donation', async (req, res) => {
+    const { id, transactionId } = req.body;
+    try {
+        const updatedDonation = await Donation.findByIdAndUpdate(
+            id,
+            { status: 'Approved', transactionId: transactionId },
+            { new: true }
+        );
+
+        if (updatedDonation) {
+            res.status(200).json({ message: 'Donation approved successfully.' });
+        } else {
+            res.status(404).json({ message: 'Donation not found.' });
+        }
+    } catch (error) {
+        console.error('Error approving donation:', error);
+        res.status(500).json({ message: 'Error approving donation.' });
+    }
+});
+
+// --- UPDATED: Endpoint for rejecting a donation in MongoDB ---
+app.post('/api/admin/reject-donation', async (req, res) => {
     const { id, reason } = req.body;
-    const donation = donationsDB.find(d => d.id == id);
-    if (donation) {
-        donation.status = 'Rejected';
-        donation.rejectionReason = reason; // Set the rejection reason
-        res.status(200).json({ message: 'Donation rejected successfully.' });
-    } else {
-        res.status(404).json({ message: 'Donation not found.' });
+    try {
+        const updatedDonation = await Donation.findByIdAndUpdate(
+            id,
+            { status: 'Rejected', rejectionReason: reason },
+            { new: true }
+        );
+
+        if (updatedDonation) {
+            res.status(200).json({ message: 'Donation rejected successfully.' });
+        } else {
+            res.status(404).json({ message: 'Donation not found.' });
+        }
+    } catch (error) {
+        console.error('Error rejecting donation:', error);
+        res.status(500).json({ message: 'Error rejecting donation.' });
     }
 });
 
@@ -302,10 +336,15 @@ app.get('/api/public/cases', async (req, res) => {
 });
 
 // --- UPDATED API ENDPOINT ---
-app.post('/api/my-donations', (req, res) => {
+app.post('/api/my-donations', async (req, res) => {
     const userEmail = req.body.email;
-    const myDonations = donationsDB.filter(d => d.email === userEmail);
-    res.json(myDonations);
+    try {
+        const myDonations = await Donation.find({ email: userEmail }).sort({ date: -1 });
+        res.json(myDonations);
+    } catch (error) {
+        console.error('Error fetching donations for user:', error);
+        res.status(500).json({ message: 'Error fetching your donations.' });
+    }
 });
 
 // --- FIX: Corrected AI Chatbot route ---
