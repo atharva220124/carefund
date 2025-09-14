@@ -8,22 +8,59 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background: #f0f2f5;
             color: #333;
             min-height: 100vh;
-            padding: 2rem;
         }
 
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 2rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            padding: 3rem;
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ecf0f1;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background-color: #34495e;
+        }
+
+        .nav-item.active {
+            background-color: #34495e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .main-content {
+            padding: 2.5rem;
             display: flex;
             flex-direction: column;
             gap: 2rem;
@@ -33,13 +70,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #e2e8f0;
             padding-bottom: 1.5rem;
-            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.25rem;
             font-weight: 700;
             color: #2c3e50;
         }
@@ -50,19 +86,19 @@
             padding: 0.75rem 1.5rem;
             border-radius: 9999px;
             font-weight: 600;
-            text-decoration: none;
             transition: all 0.3s ease;
         }
 
         .header .logout-button:hover {
             background-color: #c0392b;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(1, 1fr);
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         @media (min-width: 768px) {
@@ -72,18 +108,32 @@
         }
 
         .card {
-            background-image: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+            background-image: linear-gradient(135deg, #ffffff, #f9fafb);
             padding: 2rem;
             border-radius: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            color: #2193b0;
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #4a5568;
-            margin-bottom: 0.5rem;
         }
 
         .card-value {
@@ -98,18 +148,18 @@
             gap: 1.5rem;
         }
 
-        .table-container {
+        .table-container, .form-section {
             background-color: #ffffff;
             border-radius: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             padding: 2rem;
         }
         
-        .table-container h2 {
-            font-size: 1.75rem;
+        .table-container h2, .form-section h2 {
+            font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .data-table {
@@ -127,27 +177,17 @@
             background-color: #f8f9fa;
             font-weight: 600;
             color: #4a5568;
+            text-transform: uppercase;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
         }
 
         .data-table tr:hover {
-            background-color: #f0f4f8;
+            background-color: #eef2f6;
         }
-        
-        .form-section {
-            background-color: #f8f9fa;
-            border-radius: 1.5rem;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            text-align: left;
-        }
-        
-        .form-section h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 1rem;
-        }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -161,7 +201,7 @@
 
         .form-group input, .form-group textarea {
             width: 100%;
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             border-radius: 0.75rem;
             border: 1px solid #dcdfe6;
             transition: all 0.3s ease;
@@ -183,24 +223,32 @@
             transition: all 0.3s ease;
         }
         
-        .submit-button:hover, .approve-button:hover, .reject-button:hover {
+        .submit-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .approve-button {
-            background-image: linear-gradient(135deg, #2ecc71, #27ae60);
+        .approve-button, .reject-button {
             font-size: 0.875rem;
             padding: 0.5rem 1rem;
             border-radius: 9999px;
+            font-weight: 600;
+        }
+        
+        .approve-button {
+            background-image: linear-gradient(135deg, #2ecc71, #27ae60);
         }
         .reject-button {
             background-image: linear-gradient(135deg, #e74c3c, #c0392b);
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
             margin-left: 0.5rem;
         }
+        .approve-button:hover {
+            background-image: linear-gradient(135deg, #27ae60, #27ae60);
+        }
+        .reject-button:hover {
+            background-image: linear-gradient(135deg, #c0392b, #c0392b);
+        }
+
 
         .images-container {
             display: flex;
@@ -214,6 +262,7 @@
             height: 80px;
             object-fit: cover;
             border-radius: 0.5rem;
+            border: 2px solid #e2e8f0;
         }
 
         /* Modal Styles */
@@ -228,14 +277,15 @@
             display: none;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
             background-color: #fff;
             padding: 2rem;
-            border-radius: 1rem;
+            border-radius: 1.5rem;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: left;
         }
         .modal-buttons {
@@ -261,141 +311,170 @@
     </style>
 </head>
 <body>
-
-    <div class="dashboard-container">
-        <!-- Header -->
-        <div class="header">
-            <h1>Admin Dashboard</h1>
-            <button id="logout-button" class="logout-button">Logout</button>
-        </div>
-
-        <!-- Summary Cards -->
-        <div class="summary-cards">
-            <div class="card">
-                <p class="card-title">Total Donations</p>
-                <p class="card-value" id="total-donations">₹ 0</p>
-            </div>
-            <div class="card">
-                <p class="card-title">Total Donators</p>
-                <p class="card-value" id="total-donators">0</p>
-            </div>
-            <div class="card">
-                <p class="card-title">Patients Helped</p>
-                <p class="card-value" id="patients-helped">0</p>
-            </div>
-            <div class="card">
-                <p class="card-title">Total Requests</p>
-                <p class="card-value" id="total-requests">0</p>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">CareFund Admin</div>
+            <div class="nav-links">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-hand-holding-heart"></i>
+                    <span>Donations</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Donators</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-hospital-user"></i>
+                    <span>Cases</span>
+                </a>
             </div>
         </div>
 
-        <!-- Main Content Sections -->
-        <div class="data-section grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Add a New Live Case Form -->
-            <div class="form-section">
-                <h2>Add a New Live Case</h2>
-                <form id="add-case-form" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="patientName">Patient Name</label>
-                        <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="medicalCondition">Medical Condition</label>
-                        <input type="text" id="medicalCondition" name="medicalCondition" placeholder="e.g., Cancer Treatment" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="requestedAmount">Requested Amount (INR)</label>
-                        <input type="number" id="requestedAmount" name="requestedAmount" placeholder="e.g., 50000" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="images">Photos (Max 5)</label>
-                        <input type="file" id="images" name="images" multiple accept="image/*">
-                    </div>
-                    <button type="submit" class="submit-button">Add Case</button>
-                    <div id="add-case-status" class="mt-4 text-center"></div>
-                    <div id="add-case-spinner" class="spinner"></div>
-                </form>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Dashboard Overview</h1>
+                <button id="logout-button" class="logout-button">Logout</button>
+            </div>
+            
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-rupee-sign"></i></div>
+                    <p class="card-title">Total Donations</p>
+                    <p class="card-value" id="total-donations">₹ 0</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <p class="card-title">Total Donators</p>
+                    <p class="card-value" id="total-donators">0</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-hand-holding-medical"></i></div>
+                    <p class="card-title">Patients Helped</p>
+                    <p class="card-value" id="patients-helped">0</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-list-alt"></i></div>
+                    <p class="card-title">Total Requests</p>
+                    <p class="card-value" id="total-requests">0</p>
+                </div>
             </div>
 
-            <!-- Pending Donations Table -->
-            <div class="table-container">
-                <h2>Pending Donations</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Donator Name</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pending-donations-table-body">
-                        <!-- Content will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="data-section grid grid-cols-1 gap-8 mt-8">
-            <!-- All Donations Table -->
-            <div class="table-container">
-                <h2>All Donations</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Donator Name</th>
-                            <th>Email</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="all-donations-table-body">
-                        <!-- Content will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
+            <!-- Main Content Sections -->
+            <div class="data-section grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Add a New Live Case Form -->
+                <div class="form-section">
+                    <h2>Add a New Live Case</h2>
+                    <form id="add-case-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="patientName">Patient Name</label>
+                            <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medicalCondition">Medical Condition</label>
+                            <input type="text" id="medicalCondition" name="medicalCondition" placeholder="e.g., Cancer Treatment" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="requestedAmount">Requested Amount (INR)</label>
+                            <input type="number" id="requestedAmount" name="requestedAmount" placeholder="e.g., 50000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="images">Photos (Max 5)</label>
+                            <input type="file" id="images" name="images" multiple accept="image/*">
+                        </div>
+                        <button type="submit" class="submit-button">Add Case</button>
+                        <div id="add-case-status" class="mt-4 text-center"></div>
+                        <div id="add-case-spinner" class="spinner"></div>
+                    </form>
+                </div>
 
-            <!-- Registered Donators Table -->
-            <div class="table-container">
-                <h2>Registered Donators</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Profile</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Registered On</th>
-                        </tr>
-                    </thead>
-                    <tbody id="donators-table-body">
-                        <!-- Content will be populated by JavaScript -->
-                    </tbody>
-                </table>
+                <!-- Pending Donations Table -->
+                <div class="table-container">
+                    <h2>Pending Donations</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Donator Name</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-donations-table-body">
+                            <!-- Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            
+            <div class="data-section grid grid-cols-1 gap-8">
+                <!-- All Donations Table -->
+                <div class="table-container">
+                    <h2>All Donations</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Donator Name</th>
+                                <th>Email</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-donations-table-body">
+                            <!-- Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
 
-            <!-- All Cases Table -->
-            <div class="table-container">
-                <h2>All Cases</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Patient ID</th>
-                            <th>Patient Name</th>
-                            <th>Condition</th>
-                            <th>Amount</th>
-                            <th>Description</th>
-                            <th>Images</th>
-                        </tr>
-                    </thead>
-                    <tbody id="all-cases-table-body">
-                        <!-- Content will be populated by JavaScript -->
-                    </tbody>
-                </table>
+                <!-- Registered Donators Table -->
+                <div class="table-container">
+                    <h2>Registered Donators</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Profile</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Registered On</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donators-table-body">
+                            <!-- Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- All Cases Table -->
+                <div class="table-container">
+                    <h2>All Cases</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Patient Name</th>
+                                <th>Condition</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Images</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-cases-table-body">
+                            <!-- Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
