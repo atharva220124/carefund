@@ -24,10 +24,10 @@
     "qrcode": "^1.5.4",
     "serverless-http": "^4.0.0"
   },
- "repository": {
-  "type": "git",
-  "url": "https://github.com/atharva220124/carefund.git"
-}
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atharva220124/carefund.git"
+  },
   "bugs": {
     "url": "https://github.com/atharva220124/carefund/issues"
   },

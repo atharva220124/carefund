@@ -1,4 +1,4 @@
-// Import necessary modules 
+// Import necessary modules
 const express = require("express");
 const bodyParser = require("body-parser");
 const QRCode = require("qrcode");
@@ -12,6 +12,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const { put } = require('@vercel/blob');
 
+// NOTE: @vercel/speed-insights is a front-end library.
+// It should be added directly to your HTML files (e.g., dashboard.html) using a <script> tag,
+// not imported into this Node.js backend.
+// Example: <script type="module" src="/_vercel/speed-insights/script.js"></script>
+
 // Load environment variables from .env file
 dotenv.config();
 
@@ -21,11 +26,9 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use(cors());
 
-// --- NEW: Connect to MongoDB Atlas via Mongoose ---
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => {
+// --- UPDATED: Connect to MongoDB Atlas via Mongoose without deprecated options ---
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
     console.log("MongoDB connected successfully.");
 }).catch(err => {
     console.error("MongoDB connection error:", err);
