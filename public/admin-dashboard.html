@@ -249,7 +249,6 @@
             background-image: linear-gradient(135deg, #c0392b, #c0392b);
         }
 
-
         .images-container {
             display: flex;
             flex-wrap: wrap;
@@ -333,6 +332,10 @@
                     <span>Cases</span>
                 </a>
             </div>
+            <div class="mt-auto p-4 bg-gray-700 rounded-xl text-xs overflow-auto break-words">
+              <span class="font-bold text-gray-300">Your User ID:</span>
+              <p id="user-id" class="text-gray-400 mt-1"></p>
+            </div>
         </div>
 
         <!-- Main Content -->
@@ -372,7 +375,7 @@
                 <!-- Add a New Live Case Form -->
                 <div class="form-section">
                     <h2>Add a New Live Case</h2>
-                    <form id="add-case-form" enctype="multipart/form-data">
+                    <form id="add-case-form">
                         <div class="form-group">
                             <label for="patientName">Patient Name</label>
                             <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
@@ -390,8 +393,8 @@
                             <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="images">Photos (Max 5)</label>
-                            <input type="file" id="images" name="images" multiple accept="image/*">
+                            <label for="images">Image URLs (comma-separated)</label>
+                            <input type="text" id="images" name="images" placeholder="e.g., https://image1.com, https://image2.com">
                         </div>
                         <button type="submit" class="submit-button">Add Case</button>
                         <div id="add-case-status" class="mt-4 text-center"></div>
@@ -518,65 +521,69 @@
         </div>
     </div>
 
-    <script>
-        const API_ORIGIN = window.location.origin;
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot, setLogLevel, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // General-purpose function to handle API calls
-        const fetchData = async (url) => {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Failed to fetch data from ${url}`);
-                return await response.json();
-            } catch (error) {
-                console.error(`Error fetching data from ${url}:`, error);
-                return [];
-            }
-        };
+        // Global variables check
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Log debug messages for Firebase
+        setLogLevel('debug');
 
-        // Function to update the summary cards
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // UI element references
+        const userIdDisplay = document.getElementById('user-id');
+        const totalDonationsEl = document.getElementById('total-donations');
+        const totalDonatorsEl = document.getElementById('total-donators');
+        const patientsHelpedEl = document.getElementById('patients-helped');
+        const totalRequestsEl = document.getElementById('total-requests');
+        const addCaseForm = document.getElementById('add-case-form');
+        const addCaseStatus = document.getElementById('add-case-status');
+        const addCaseSpinner = document.getElementById('add-case-spinner');
+        const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
+        const allDonationsTableBody = document.getElementById('all-donations-table-body');
+        const donatorsTableBody = document.getElementById('donators-table-body');
+        const allCasesTableBody = document.getElementById('all-cases-table-body');
+
+        // Modal elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const rejectionModal = document.getElementById('rejection-modal');
+        const transactionIdModal = document.getElementById('transaction-id-modal');
+        const modalMessage = document.getElementById('modal-message');
+        let currentDonationId = null;
+
+        // Functions to show/hide modals
+        const showModal = (modal) => modal.style.display = 'flex';
+        const hideModal = (modal) => modal.style.display = 'none';
+
+        // Firestore collection references based on the app ID and security rules
+        const donationsCol = collection(db, `artifacts/${appId}/public/data/donations`);
+        const donatorsCol = collection(db, `artifacts/${appId}/public/data/donators`);
+        const casesCol = collection(db, `artifacts/${appId}/public/data/cases`);
+
+        // Update the dashboard summary cards with data from the tables
         const updateSummaryCards = (donations, donators, cases) => {
             const totalDonationsAmount = donations
                 .filter(d => d.status === 'Approved')
-                .reduce((sum, d) => sum + d.amount, 0);
-            document.getElementById('total-donations').textContent = `₹ ${totalDonationsAmount.toLocaleString()}`;
-            document.getElementById('total-donators').textContent = donators.length;
-            document.getElementById('patients-helped').textContent = donations
-                .filter(d => d.status === 'Approved')
-                .length;
-            document.getElementById('total-requests').textContent = cases.length;
+                .reduce((sum, d) => sum + (d.amount || 0), 0);
+            totalDonationsEl.textContent = `₹ ${totalDonationsAmount.toLocaleString()}`;
+            totalDonatorsEl.textContent = donators.length;
+            const patientsHelped = new Set(donations.filter(d => d.status === 'Approved').map(d => d.patientName)).size;
+            patientsHelpedEl.textContent = patientsHelped;
+            totalRequestsEl.textContent = cases.length;
         };
 
-        // Function to fetch and render donators
-        const fetchAndRenderDonators = async () => {
-            const donatorsTableBody = document.getElementById('donators-table-body');
-            const donators = await fetchData(`${API_ORIGIN}/api/admin/donators`);
-            donatorsTableBody.innerHTML = '';
-            if (donators.length === 0) {
-                donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>`;
-            } else {
-                donators.forEach(donator => {
-                    const row = document.createElement('tr');
-                    const profilePicSrc = donator.profilePic || 'https://placehold.co/40x40/d1d5db/4b5563?text=N/A';
-                    row.innerHTML = `
-                        <td class="flex items-center">
-                            <img src="${profilePicSrc}" alt="${donator.name}'s profile picture" class="w-10 h-10 rounded-full mr-4">
-                        </td>
-                        <td>${donator.name || 'Anonymous'}</td>
-                        <td>${donator.email || 'N/A'}</td>
-                        <td>${new Date(donator.registrationDate).toLocaleDateString()}</td>
-                    `;
-                    donatorsTableBody.appendChild(row);
-                });
-            }
-            return donators;
-        };
-
-        // Function to fetch and render donations
-        const fetchAndRenderDonations = async () => {
-            const allDonationsTableBody = document.getElementById('all-donations-table-body');
-            const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
-            const donations = await fetchData(`${API_ORIGIN}/api/admin/donations`);
-
+        // Render donations table
+        const renderDonations = (donations) => {
             allDonationsTableBody.innerHTML = '';
             pendingDonationsTableBody.innerHTML = '';
             
@@ -591,7 +598,7 @@
                         <td>${donation.name || 'Anonymous'}</td>
                         <td>${donation.email || 'N/A'}</td>
                         <td>₹ ${donation.amount}</td>
-                        <td>${new Date(donation.date).toLocaleDateString()}</td>
+                        <td>${new Date(donation.date.seconds * 1000).toLocaleDateString()}</td>
                         <td><span class="font-semibold ${statusColor}">${donation.status}</span></td>
                     `;
                     allDonationsTableBody.appendChild(row);
@@ -601,32 +608,52 @@
                         pendingRow.innerHTML = `
                             <td>${donation.name || 'Anonymous'}</td>
                             <td>₹ ${donation.amount}</td>
-                            <td>${new Date(donation.date).toLocaleDateString()}</td>
+                            <td>${new Date(donation.date.seconds * 1000).toLocaleDateString()}</td>
                             <td>
-                                <button class="approve-button" data-id="${donation._id}">Approve</button>
-                                <button class="reject-button" data-id="${donation._id}">Reject</button>
+                                <button class="approve-button" data-id="${donation.id}">Approve</button>
+                                <button class="reject-button" data-id="${donation.id}">Reject</button>
                             </td>
                         `;
                         pendingDonationsTableBody.appendChild(pendingRow);
                     }
                 });
             }
-            return donations;
         };
 
-        // Function to fetch and render cases
-        const fetchAndRenderCases = async () => {
-            const allCasesTableBody = document.getElementById('all-cases-table-body');
-            const cases = await fetchData(`${API_ORIGIN}/api/admin/cases`);
+        // Render donators table
+        const renderDonators = (donators) => {
+            donatorsTableBody.innerHTML = '';
+            if (donators.length === 0) {
+                donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>`;
+            } else {
+                donators.forEach(donator => {
+                    const row = document.createElement('tr');
+                    const profilePicSrc = donator.profilePic || 'https://placehold.co/40x40/d1d5db/4b5563?text=User';
+                    row.innerHTML = `
+                        <td class="flex items-center">
+                            <img src="${profilePicSrc}" alt="${donator.name}'s profile picture" class="w-10 h-10 rounded-full mr-4" onerror="this.onerror=null;this.src='https://placehold.co/40x40/d1d5db/4b5563?text=User';">
+                        </td>
+                        <td>${donator.name || 'Anonymous'}</td>
+                        <td>${donator.email || 'N/A'}</td>
+                        <td>${new Date(donator.registrationDate.seconds * 1000).toLocaleDateString()}</td>
+                    `;
+                    donatorsTableBody.appendChild(row);
+                });
+            }
+        };
+
+        // Render cases table
+        const renderCases = (cases) => {
             allCasesTableBody.innerHTML = '';
             if (cases.length === 0) {
                 allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-gray-500">No cases found.</td></tr>`;
             } else {
                 cases.forEach(c => {
                     const row = document.createElement('tr');
-                    const imagesHtml = c.images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/40x40/d1d5db/4b5563?text=N/A';">`).join('');
+                    const images = c.images || [];
+                    const imagesHtml = images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/40x40/d1d5db/4b5563?text=N/A';">`).join('');
                     row.innerHTML = `
-                        <td>${c.patientId}</td>
+                        <td>${c.id}</td>
                         <td>${c.patientName}</td>
                         <td>${c.medicalCondition}</td>
                         <td>₹ ${c.requestedAmount}</td>
@@ -636,33 +663,83 @@
                     allCasesTableBody.appendChild(row);
                 });
             }
-            return cases;
         };
 
-        // --- Modal & Action Logic ---
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const rejectionModal = document.getElementById('rejection-modal');
-        const transactionIdModal = document.getElementById('transaction-id-modal');
-        const modalMessage = document.getElementById('modal-message');
+        // Main function to fetch and listen to all data
+        const loadAllData = async () => {
+            // Wait for authentication state to be ready
+            await new Promise(resolve => {
+                const unsubscribe = onAuthStateChanged(auth, user => {
+                    if (user) {
+                        userIdDisplay.textContent = user.uid;
+                    }
+                    unsubscribe();
+                    resolve();
+                });
+            });
 
-        const showModal = (modal) => modal.style.display = 'flex';
-        const hideModal = (modal) => modal.style.display = 'none';
+            // Set up real-time listeners for each collection
+            onSnapshot(donationsCol, (snapshot) => {
+                const donations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderDonations(donations);
+                // After getting donations, update summary cards with all data
+                getDocs(donatorsCol).then(donatorSnapshot => {
+                    const donators = donatorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    getDocs(casesCol).then(caseSnapshot => {
+                        const cases = caseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        updateSummaryCards(donations, donators, cases);
+                    });
+                });
+            });
 
-        let currentDonationId = null;
+            onSnapshot(donatorsCol, (snapshot) => {
+                const donators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderDonators(donators);
+            });
 
-        document.getElementById('logout-button').addEventListener('click', () => {
-            localStorage.removeItem('isAdminLoggedIn');
-            window.location.href = '/dashboard';
+            onSnapshot(casesCol, (snapshot) => {
+                const cases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCases(cases);
+            });
+        };
+
+        // Handle Add Case Form Submission
+        addCaseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(addCaseForm);
+            const patientName = formData.get('patientName');
+            const medicalCondition = formData.get('medicalCondition');
+            const requestedAmount = Number(formData.get('requestedAmount'));
+            const description = formData.get('description');
+            const images = formData.get('images').split(',').map(url => url.trim()).filter(url => url);
+
+            addCaseSpinner.style.display = 'block';
+            addCaseStatus.textContent = '';
+
+            try {
+                await addDoc(casesCol, {
+                    patientName,
+                    medicalCondition,
+                    requestedAmount,
+                    description,
+                    images,
+                    createdAt: new Date()
+                });
+
+                addCaseSpinner.style.display = 'none';
+                addCaseStatus.style.color = 'green';
+                addCaseStatus.textContent = 'Case added successfully!';
+                addCaseForm.reset();
+            } catch (error) {
+                addCaseSpinner.style.display = 'none';
+                addCaseStatus.style.color = 'red';
+                addCaseStatus.textContent = 'An error occurred. Please try again.';
+                console.error('Error adding case:', error);
+            }
         });
 
-        // Check admin login status
-        const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
-        if (!isAdminLoggedIn) {
-            window.location.href = '/dashboard';
-        }
-
         // Event delegation for approve/reject buttons
-        document.getElementById('pending-donations-table-body').addEventListener('click', (event) => {
+        pendingDonationsTableBody.addEventListener('click', (event) => {
             const target = event.target;
             if (target.classList.contains('approve-button')) {
                 currentDonationId = target.dataset.id;
@@ -683,22 +760,15 @@
             }
             
             try {
-                const response = await fetch(`${API_ORIGIN}/api/admin/approve-donation`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: currentDonationId, transactionId: transactionId })
+                const donationRef = doc(db, `artifacts/${appId}/public/data/donations/${currentDonationId}`);
+                await updateDoc(donationRef, {
+                    status: 'Approved',
+                    transactionId: transactionId
                 });
 
-                const result = await response.json();
                 hideModal(transactionIdModal);
-                modalMessage.textContent = response.ok ? 'Donation approved successfully!' : (result.message || 'Failed to approve donation.');
+                modalMessage.textContent = 'Donation approved successfully!';
                 showModal(confirmationModal);
-
-                if (response.ok) {
-                    await fetchDonations();
-                    await fetchDonators();
-                    await fetchCases();
-                }
             } catch (error) {
                 console.error('Error approving donation:', error);
                 hideModal(transactionIdModal);
@@ -717,22 +787,15 @@
             }
 
             try {
-                const response = await fetch(`${API_ORIGIN}/api/admin/reject-donation`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: currentDonationId, reason: reason })
+                const donationRef = doc(db, `artifacts/${appId}/public/data/donations/${currentDonationId}`);
+                await updateDoc(donationRef, {
+                    status: 'Rejected',
+                    rejectionReason: reason
                 });
-
-                const result = await response.json();
-                hideModal(rejectionModal);
-                modalMessage.textContent = response.ok ? 'Donation rejected successfully!' : (result.message || 'Failed to reject donation.');
-                showModal(confirmationModal);
                 
-                if (response.ok) {
-                    await fetchDonations();
-                    await fetchDonators();
-                    await fetchCases();
-                }
+                hideModal(rejectionModal);
+                modalMessage.textContent = 'Donation rejected successfully!';
+                showModal(confirmationModal);
             } catch (error) {
                 console.error('Error rejecting donation:', error);
                 hideModal(rejectionModal);
@@ -743,53 +806,40 @@
 
         // Close Modals
         document.getElementById('cancel-modal-button').addEventListener('click', () => hideModal(confirmationModal));
+        document.getElementById('confirm-modal-button').addEventListener('click', () => hideModal(confirmationModal));
         document.getElementById('cancel-reject-button').addEventListener('click', () => hideModal(rejectionModal));
         document.getElementById('cancel-transaction-button').addEventListener('click', () => hideModal(transactionIdModal));
 
-        // Handle Add Case Form Submission
-        document.getElementById('add-case-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
-            const statusDiv = document.getElementById('add-case-status');
-            const spinner = document.getElementById('add-case-spinner');
-
-            spinner.style.display = 'block';
-            statusDiv.textContent = '';
-
+        // Handle Logout
+        document.getElementById('logout-button').addEventListener('click', async () => {
             try {
-                const response = await fetch(`${API_ORIGIN}/api/admin/cases`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                spinner.style.display = 'none';
-
-                if (response.ok) {
-                    statusDiv.style.color = 'green';
-                    statusDiv.textContent = 'Case added successfully!';
-                    form.reset();
-                    await fetchAndRenderCases();
-                    const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
-                    updateSummaryCards(allData[0], allData[1], allData[2]);
-                } else {
-                    statusDiv.style.color = 'red';
-                    statusDiv.textContent = result.message || 'Failed to add case.';
-                }
+                await signOut(auth);
+                // Clear UI or redirect if necessary
+                window.location.reload(); 
             } catch (error) {
-                spinner.style.display = 'none';
-                statusDiv.style.color = 'red';
-                statusDiv.textContent = 'An error occurred. Please try again.';
-                console.error('Error adding case:', error);
+                console.error('Error signing out:', error);
             }
         });
 
-        // Initial Data Fetch
-        document.addEventListener('DOMContentLoaded', async () => {
-            const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
-            updateSummaryCards(allData[0], allData[1], allData[2]);
+        // Initial Auth and data load
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userIdDisplay.textContent = user.uid;
+                await loadAllData();
+            } else {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error('Error during initial sign-in:', error);
+                    userIdDisplay.textContent = 'Auth failed';
+                }
+            }
         });
+
     </script>
 </body>
 </html>
