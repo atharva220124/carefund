@@ -652,17 +652,13 @@
 
         document.getElementById('logout-button').addEventListener('click', () => {
             localStorage.removeItem('isAdminLoggedIn');
-            window.location.href = `${window.location.origin}/dashboard`;
+            window.location.href = '/dashboard';
         });
 
-        // The code below is the source of the redirect loop.
-        // It checks for a login status that is not set, and immediately redirects.
-        // For testing, you can uncomment the line below to bypass the check.
-        // For a real app, you would have a proper login page to set this.
-        // localStorage.setItem('isAdminLoggedIn', 'true');
+        // Check admin login status
         const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
         if (!isAdminLoggedIn) {
-            window.location.href = `${window.location.origin}/dashboard`;
+            window.location.href = '/dashboard';
         }
 
         // Event delegation for approve/reject buttons
@@ -699,9 +695,9 @@
                 showModal(confirmationModal);
 
                 if (response.ok) {
-                    await fetchAndRenderDonations();
-                    await fetchAndRenderDonators();
-                    await fetchAndRenderCases();
+                    await fetchDonations();
+                    await fetchDonators();
+                    await fetchCases();
                 }
             } catch (error) {
                 console.error('Error approving donation:', error);
@@ -733,9 +729,9 @@
                 showModal(confirmationModal);
                 
                 if (response.ok) {
-                    await fetchAndRenderDonations();
-                    await fetchAndRenderDonators();
-                    await fetchAndRenderCases();
+                    await fetchDonations();
+                    await fetchDonators();
+                    await fetchCases();
                 }
             } catch (error) {
                 console.error('Error rejecting donation:', error);
