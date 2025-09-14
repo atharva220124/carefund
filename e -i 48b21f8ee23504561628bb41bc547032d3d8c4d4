@@ -1,0 +1,83 @@
+[33mcommit 22b5bf6af8f6312010720bba41afd053774950e7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sun Sep 14 10:19:17 2025 +0530
+
+    feat: Add Node.js backend with Mongoose and API routes
+
+[33mcommit 3387a9b95f1509e576ad189278c3cd92cd4676e3[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sun Sep 14 10:16:48 2025 +0530
+
+    Initial backend commit
+
+[33mcommit 48b21f8ee23504561628bb41bc547032d3d8c4d4[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 20:27:11 2025 +0530
+
+    feat: Implement persistent donation management with MongoDB
+
+[33mcommit c4406d3a33448a5386b6153f9b4654f5311cc826[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 19:49:54 2025 +0530
+
+    feat: Add MongoDB integration with Mongoose
+
+[33mcommit 6655ccb3c20aa88dbe6cbfdd35c9484d6f09f63e[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 19:32:07 2025 +0530
+
+    feat: Integrated Vercel Blob for image uploads
+
+[33mcommit cccaffe583c37f015e343f3093c5bc53b2713e91[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 19:20:49 2025 +0530
+
+    feat: Integrated Vercel Blob for image uploads
+
+[33mcommit ecce7233dc7183ba3a76ac50455724d931414396[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 18:53:50 2025 +0530
+
+    Fix: Final Vercel deployment with in-memory storage
+
+[33mcommit 2fdb9589e55d06067af64166c23c9105df40ea6c[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 18:46:15 2025 +0530
+
+    Add cors dependency
+
+[33mcommit 94af74c96c07aa24b8703c56b90001377b6fd4c3[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 18:43:19 2025 +0530
+
+    Add multer dependency
+
+[33mcommit 49aac855bef2ecd8656f936f197bae6b60f7f5d0[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 18:40:08 2025 +0530
+
+    Fix: Add generative AI dependency
+
+[33mcommit 9924d778731f6170ca49825db9c1bef969eeab2e[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 18:18:57 2025 +0530
+
+    Fix: Add google-auth-library dependency
+
+[33mcommit d2464b7e8fcdc39a0c6f46195408bc19cd0b81b4[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Sat Sep 13 12:58:45 2025 +0530
+
+    Finalizing files for upload
+
+[33mcommit 4197c52e0807c369364924c956dbd8914b16ef20[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Fri Sep 12 20:38:30 2025 +0530
+
+    Add qrcode dependency
+
+[33mcommit 7fc5f376b03bbdf771f14dd00709a8251b638b15[m
+Author: atharva220124 <atharvanaik2201@gmail.com>
+Date:   Fri Sep 12 20:15:37 2025 +0530
+
+    CareFund initial commit
