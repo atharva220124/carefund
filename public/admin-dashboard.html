@@ -308,38 +308,10 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .login-box {
-            background-color: #ffffff;
-            padding: 3rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="login-container">
-        <div class="login-box">
-            <h1 class="text-3xl font-bold mb-6 text-gray-800">Admin Login</h1>
-            <p class="text-gray-500 mb-6">Use the password to access the dashboard.</p>
-            <div class="form-group mb-4">
-                <label for="admin-password" class="text-gray-600 block text-left mb-2">Password</label>
-                <input type="password" id="admin-password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter password" required>
-            </div>
-            <button id="login-button" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
-            <p id="login-status" class="mt-4 text-sm text-red-500"></p>
-        </div>
-    </div>
-    
-    <div id="dashboard-container" class="dashboard-layout" style="display: none;">
+    <div class="dashboard-layout">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-logo">CareFund Admin</div>
@@ -548,44 +520,6 @@
 
     <script>
         const API_ORIGIN = window.location.origin;
-        const ADMIN_PASSWORD = "admin"; // Hardcoded password for this demonstration
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginScreen = document.getElementById('login-screen');
-            const dashboardContainer = document.getElementById('dashboard-container');
-            const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
-
-            if (isAdminLoggedIn) {
-                loginScreen.style.display = 'none';
-                dashboardContainer.style.display = 'grid';
-                initDashboard();
-            } else {
-                loginScreen.style.display = 'flex';
-                dashboardContainer.style.display = 'none';
-            }
-
-            document.getElementById('login-button').addEventListener('click', () => {
-                const passwordInput = document.getElementById('admin-password').value;
-                const statusMessage = document.getElementById('login-status');
-                if (passwordInput === ADMIN_PASSWORD) {
-                    localStorage.setItem('isAdminLoggedIn', 'true');
-                    statusMessage.textContent = 'Login successful!';
-                    window.location.reload();
-                } else {
-                    statusMessage.textContent = 'Invalid password. Please try again.';
-                }
-            });
-
-            document.getElementById('logout-button').addEventListener('click', () => {
-                localStorage.removeItem('isAdminLoggedIn');
-                window.location.reload();
-            });
-        });
-
-        const initDashboard = async () => {
-            const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
-            updateSummaryCards(allData[0], allData[1], allData[2]);
-        }
 
         // General-purpose function to handle API calls
         const fetchData = async (url) => {
@@ -716,6 +650,17 @@
 
         let currentDonationId = null;
 
+        document.getElementById('logout-button').addEventListener('click', () => {
+            localStorage.removeItem('isAdminLoggedIn');
+            window.location.href = '/dashboard';
+        });
+
+        // Check admin login status
+        const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
+        if (!isAdminLoggedIn) {
+            window.location.href = '/dashboard';
+        }
+
         // Event delegation for approve/reject buttons
         document.getElementById('pending-donations-table-body').addEventListener('click', (event) => {
             const target = event.target;
@@ -750,9 +695,9 @@
                 showModal(confirmationModal);
 
                 if (response.ok) {
-                    await fetchAndRenderDonations();
-                    await fetchAndRenderDonators();
-                    await fetchAndRenderCases();
+                    await fetchDonations();
+                    await fetchDonators();
+                    await fetchCases();
                 }
             } catch (error) {
                 console.error('Error approving donation:', error);
@@ -784,9 +729,9 @@
                 showModal(confirmationModal);
                 
                 if (response.ok) {
-                    await fetchAndRenderDonations();
-                    await fetchAndRenderDonators();
-                    await fetchAndRenderCases();
+                    await fetchDonations();
+                    await fetchDonators();
+                    await fetchCases();
                 }
             } catch (error) {
                 console.error('Error rejecting donation:', error);
@@ -838,6 +783,12 @@
                 statusDiv.textContent = 'An error occurred. Please try again.';
                 console.error('Error adding case:', error);
             }
+        });
+
+        // Initial Data Fetch
+        document.addEventListener('DOMContentLoaded', async () => {
+            const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
+            updateSummaryCards(allData[0], allData[1], allData[2]);
         });
     </script>
 </body>
