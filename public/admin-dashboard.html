@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - CareFund</title>
+    <title>CareFund Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -221,6 +221,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: none;
         }
         
         .submit-button:hover {
@@ -248,7 +249,6 @@
         .reject-button:hover {
             background-image: linear-gradient(135deg, #c0392b, #c0392b);
         }
-
 
         .images-container {
             display: flex;
@@ -308,172 +308,230 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Login Page styles */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f2f5;
+        }
+        .login-card {
+            background-color: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+        }
+        .login-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-button {
+            background-image: linear-gradient(135deg, #2193b0, #6dd5ed);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
-    <div class="dashboard-layout">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-logo">CareFund Admin</div>
-            <div class="nav-links">
-                <a href="#" class="nav-item active">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-hand-holding-heart"></i>
-                    <span>Donations</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-user-friends"></i>
-                    <span>Donators</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-hospital-user"></i>
-                    <span>Cases</span>
-                </a>
+    <!-- Main container to toggle visibility of login/dashboard -->
+    <div id="app-container">
+        <!-- Login Section (Initially visible if not logged in) -->
+        <div id="login-section" class="login-container">
+            <div class="login-card">
+                <h1 class="login-title">Admin Login</h1>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="adminEmail">Email</label>
+                        <input type="email" id="adminEmail" name="email" placeholder="admin@carefund.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <input type="password" id="adminPassword" name="password" placeholder="********" required>
+                    </div>
+                    <button type="submit" class="login-button">Login</button>
+                    <div id="login-status" class="mt-4 text-center"></div>
+                </form>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Header -->
-            <div class="header">
-                <h1>Dashboard Overview</h1>
-                <button id="logout-button" class="logout-button">Logout</button>
-            </div>
-            
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-rupee-sign"></i></div>
-                    <p class="card-title">Total Donations</p>
-                    <p class="card-value" id="total-donations">₹ 0</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <p class="card-title">Total Donators</p>
-                    <p class="card-value" id="total-donators">0</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-hand-holding-medical"></i></div>
-                    <p class="card-title">Patients Helped</p>
-                    <p class="card-value" id="patients-helped">0</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-list-alt"></i></div>
-                    <p class="card-title">Total Requests</p>
-                    <p class="card-value" id="total-requests">0</p>
+        <!-- Admin Dashboard Section (Hidden by default) -->
+        <div id="dashboard-section" class="dashboard-layout" style="display: none;">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-logo">CareFund Admin</div>
+                <div class="nav-links">
+                    <a href="#" class="nav-item active">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <span>Donations</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-user-friends"></i>
+                        <span>Donators</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-hospital-user"></i>
+                        <span>Cases</span>
+                    </a>
                 </div>
             </div>
 
-            <!-- Main Content Sections -->
-            <div class="data-section grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Add a New Live Case Form -->
-                <div class="form-section">
-                    <h2>Add a New Live Case</h2>
-                    <form id="add-case-form" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="patientName">Patient Name</label>
-                            <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="medicalCondition">Medical Condition</label>
-                            <input type="text" id="medicalCondition" name="medicalCondition" placeholder="e.g., Cancer Treatment" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="requestedAmount">Requested Amount (INR)</label>
-                            <input type="number" id="requestedAmount" name="requestedAmount" placeholder="e.g., 50000" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Description</label>
-                            <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="images">Photos (Max 5)</label>
-                            <input type="file" id="images" name="images" multiple accept="image/*">
-                        </div>
-                        <button type="submit" class="submit-button">Add Case</button>
-                        <div id="add-case-status" class="mt-4 text-center"></div>
-                        <div id="add-case-spinner" class="spinner"></div>
-                    </form>
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Header -->
+                <div class="header">
+                    <h1>Dashboard Overview</h1>
+                    <button id="logout-button" class="logout-button">Logout</button>
+                </div>
+                
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-icon"><i class="fas fa-rupee-sign"></i></div>
+                        <p class="card-title">Total Donations</p>
+                        <p class="card-value" id="total-donations">₹ 0</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><i class="fas fa-users"></i></div>
+                        <p class="card-title">Total Donators</p>
+                        <p class="card-value" id="total-donators">0</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><i class="fas fa-hand-holding-medical"></i></div>
+                        <p class="card-title">Patients Helped</p>
+                        <p class="card-value" id="patients-helped">0</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><i class="fas fa-list-alt"></i></div>
+                        <p class="card-title">Total Requests</p>
+                        <p class="card-value" id="total-requests">0</p>
+                    </div>
                 </div>
 
-                <!-- Pending Donations Table -->
-                <div class="table-container">
-                    <h2>Pending Donations</h2>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Donator Name</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pending-donations-table-body">
-                            <!-- Content will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="data-section grid grid-cols-1 gap-8">
-                <!-- All Donations Table -->
-                <div class="table-container">
-                    <h2>All Donations</h2>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Donator Name</th>
-                                <th>Email</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="all-donations-table-body">
-                            <!-- Content will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Main Content Sections -->
+                <div class="data-section grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Add a New Live Case Form -->
+                    <div class="form-section">
+                        <h2>Add a New Live Case</h2>
+                        <form id="add-case-form" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="patientName">Patient Name</label>
+                                <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="medicalCondition">Medical Condition</label>
+                                <input type="text" id="medicalCondition" name="medicalCondition" placeholder="e.g., Cancer Treatment" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="requestedAmount">Requested Amount (INR)</label>
+                                <input type="number" id="requestedAmount" name="requestedAmount" placeholder="e.g., 50000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="images">Photos (Max 5)</label>
+                                <input type="file" id="images" name="images" multiple accept="image/*">
+                            </div>
+                            <button type="submit" class="submit-button">Add Case</button>
+                            <div id="add-case-status" class="mt-4 text-center"></div>
+                            <div id="add-case-spinner" class="spinner"></div>
+                        </form>
+                    </div>
 
-                <!-- Registered Donators Table -->
-                <div class="table-container">
-                    <h2>Registered Donators</h2>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Profile</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Registered On</th>
-                            </tr>
-                        </thead>
-                        <tbody id="donators-table-body">
-                            <!-- Content will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+                    <!-- Pending Donations Table -->
+                    <div class="table-container">
+                        <h2>Pending Donations</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Donator Name</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-donations-table-body">
+                                <!-- Content will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+                
+                <div class="data-section grid grid-cols-1 gap-8">
+                    <!-- All Donations Table -->
+                    <div class="table-container">
+                        <h2>All Donations</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Donator Name</th>
+                                    <th>Email</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-donations-table-body">
+                                <!-- Content will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- All Cases Table -->
-                <div class="table-container">
-                    <h2>All Cases</h2>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Patient ID</th>
-                                <th>Patient Name</th>
-                                <th>Condition</th>
-                                <th>Amount</th>
-                                <th>Description</th>
-                                <th>Images</th>
-                            </tr>
-                        </thead>
-                        <tbody id="all-cases-table-body">
-                            <!-- Content will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+                    <!-- Registered Donators Table -->
+                    <div class="table-container">
+                        <h2>Registered Donators</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Registered On</th>
+                                </tr>
+                            </thead>
+                            <tbody id="donators-table-body">
+                                <!-- Content will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- All Cases Table -->
+                    <div class="table-container">
+                        <h2>All Cases</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Condition</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Images</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-cases-table-body">
+                                <!-- Content will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -519,21 +577,46 @@
     </div>
 
     <script>
-        const API_ORIGIN = window.location.origin;
+        // Mock data to simulate API responses for a self-contained app
+        const MOCK_DATA = {
+            donators: [
+                { id: "d1", name: "John Doe", email: "john.doe@example.com", profilePic: "https://placehold.co/40x40/d1d5db/4b5563?text=JD", registrationDate: new Date().toISOString() },
+                { id: "d2", name: "Jane Smith", email: "jane.smith@example.com", profilePic: "https://placehold.co/40x40/d1d5db/4b5563?text=JS", registrationDate: new Date().toISOString() }
+            ],
+            donations: [
+                { _id: "don1", name: "Anonymous", email: null, amount: 5000, date: new Date().toISOString(), status: "Pending" },
+                { _id: "don2", name: "John Doe", email: "john.doe@example.com", amount: 1500, date: new Date().toISOString(), status: "Approved" },
+                { _id: "don3", name: "Jane Smith", email: "jane.smith@example.com", amount: 2000, date: new Date().toISOString(), status: "Rejected" },
+                { _id: "don4", name: "Anonymous", email: null, amount: 10000, date: new Date().toISOString(), status: "Pending" }
+            ],
+            cases: [
+                { patientId: "p1", patientName: "Aarav Sharma", medicalCondition: "Cardiovascular Disease", requestedAmount: 50000, description: "Funds for a critical heart surgery.", images: ["https://placehold.co/80x80/d1d5db/4b5563?text=Scan1", "https://placehold.co/80x80/d1d5db/4b5563?text=Scan2"] },
+                { patientId: "p2", patientName: "Priya Singh", medicalCondition: "Cancer Treatment", requestedAmount: 250000, description: "Chemotherapy sessions.", images: ["https://placehold.co/80x80/d1d5db/4b5563?text=Report1"] }
+            ]
+        };
+        const API_ORIGIN = '';
 
-        // General-purpose function to handle API calls
+        // --- Core Application Logic ---
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+
         const fetchData = async (url) => {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Failed to fetch data from ${url}`);
-                return await response.json();
-            } catch (error) {
-                console.error(`Error fetching data from ${url}:`, error);
-                return [];
+            const endpoint = url.split('/').pop();
+            const data = MOCK_DATA[endpoint];
+            return data || [];
+        };
+
+        const updateUI = () => {
+            const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
+            if (isAdminLoggedIn) {
+                loginSection.style.display = 'none';
+                dashboardSection.style.display = 'grid';
+            } else {
+                loginSection.style.display = 'flex';
+                dashboardSection.style.display = 'none';
             }
         };
 
-        // Function to update the summary cards
         const updateSummaryCards = (donations, donators, cases) => {
             const totalDonationsAmount = donations
                 .filter(d => d.status === 'Approved')
@@ -546,7 +629,6 @@
             document.getElementById('total-requests').textContent = cases.length;
         };
 
-        // Function to fetch and render donators
         const fetchAndRenderDonators = async () => {
             const donatorsTableBody = document.getElementById('donators-table-body');
             const donators = await fetchData(`${API_ORIGIN}/api/admin/donators`);
@@ -571,7 +653,6 @@
             return donators;
         };
 
-        // Function to fetch and render donations
         const fetchAndRenderDonations = async () => {
             const allDonationsTableBody = document.getElementById('all-donations-table-body');
             const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
@@ -614,7 +695,6 @@
             return donations;
         };
 
-        // Function to fetch and render cases
         const fetchAndRenderCases = async () => {
             const allCasesTableBody = document.getElementById('all-cases-table-body');
             const cases = await fetchData(`${API_ORIGIN}/api/admin/cases`);
@@ -639,7 +719,6 @@
             return cases;
         };
 
-        // --- Modal & Action Logic ---
         const confirmationModal = document.getElementById('confirmation-modal');
         const rejectionModal = document.getElementById('rejection-modal');
         const transactionIdModal = document.getElementById('transaction-id-modal');
@@ -650,18 +729,32 @@
 
         let currentDonationId = null;
 
-        document.getElementById('logout-button').addEventListener('click', () => {
-            localStorage.removeItem('isAdminLoggedIn');
-            window.location.href = '/dashboard';
+        // Login form submission handler
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const statusDiv = document.getElementById('login-status');
+
+            if (email === "admin@carefund.com" && password === "SJCHS@123") {
+                localStorage.setItem('isAdminLoggedIn', 'true');
+                statusDiv.textContent = 'Login successful!';
+                statusDiv.style.color = 'green';
+                setTimeout(() => {
+                    updateUI();
+                    loadDashboardData();
+                }, 500);
+            } else {
+                statusDiv.textContent = 'Invalid credentials.';
+                statusDiv.style.color = 'red';
+            }
         });
 
-        // Check admin login status
-        const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
-        if (!isAdminLoggedIn) {
-            window.location.href = '/dashboard';
-        }
+        document.getElementById('logout-button').addEventListener('click', () => {
+            localStorage.removeItem('isAdminLoggedIn');
+            updateUI();
+        });
 
-        // Event delegation for approve/reject buttons
         document.getElementById('pending-donations-table-body').addEventListener('click', (event) => {
             const target = event.target;
             if (target.classList.contains('approve-button')) {
@@ -673,7 +766,7 @@
             }
         });
 
-        // Approve Donation
+        // Approve Donation Logic
         document.getElementById('submit-transaction-button').addEventListener('click', async () => {
             const transactionId = document.getElementById('transaction-id-input').value.trim();
             if (!transactionId) {
@@ -682,32 +775,19 @@
                 return;
             }
             
-            try {
-                const response = await fetch(`${API_ORIGIN}/api/admin/approve-donation`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: currentDonationId, transactionId: transactionId })
-                });
-
-                const result = await response.json();
-                hideModal(transactionIdModal);
-                modalMessage.textContent = response.ok ? 'Donation approved successfully!' : (result.message || 'Failed to approve donation.');
-                showModal(confirmationModal);
-
-                if (response.ok) {
-                    await fetchDonations();
-                    await fetchDonators();
-                    await fetchCases();
-                }
-            } catch (error) {
-                console.error('Error approving donation:', error);
-                hideModal(transactionIdModal);
-                modalMessage.textContent = 'An error occurred while approving the donation.';
-                showModal(confirmationModal);
+            // Find and update the donation status in the mock data
+            const donationToApprove = MOCK_DATA.donations.find(d => d._id === currentDonationId);
+            if (donationToApprove) {
+                donationToApprove.status = 'Approved';
             }
+
+            hideModal(transactionIdModal);
+            modalMessage.textContent = 'Donation approved successfully!';
+            showModal(confirmationModal);
+            loadDashboardData();
         });
 
-        // Reject Donation
+        // Reject Donation Logic
         document.getElementById('submit-reject-button').addEventListener('click', async () => {
             const reason = document.getElementById('rejection-reason').value.trim();
             if (!reason) {
@@ -716,29 +796,16 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_ORIGIN}/api/admin/reject-donation`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: currentDonationId, reason: reason })
-                });
-
-                const result = await response.json();
-                hideModal(rejectionModal);
-                modalMessage.textContent = response.ok ? 'Donation rejected successfully!' : (result.message || 'Failed to reject donation.');
-                showModal(confirmationModal);
-                
-                if (response.ok) {
-                    await fetchDonations();
-                    await fetchDonators();
-                    await fetchCases();
-                }
-            } catch (error) {
-                console.error('Error rejecting donation:', error);
-                hideModal(rejectionModal);
-                modalMessage.textContent = 'An error occurred while rejecting the donation.';
-                showModal(confirmationModal);
+            // Find and update the donation status in the mock data
+            const donationToReject = MOCK_DATA.donations.find(d => d._id === currentDonationId);
+            if (donationToReject) {
+                donationToReject.status = 'Rejected';
             }
+
+            hideModal(rejectionModal);
+            modalMessage.textContent = 'Donation rejected successfully!';
+            showModal(confirmationModal);
+            loadDashboardData();
         });
 
         // Close Modals
@@ -746,49 +813,45 @@
         document.getElementById('cancel-reject-button').addEventListener('click', () => hideModal(rejectionModal));
         document.getElementById('cancel-transaction-button').addEventListener('click', () => hideModal(transactionIdModal));
 
-        // Handle Add Case Form Submission
+        // Handle Add Case Form Submission (Mocked)
         document.getElementById('add-case-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
-            const formData = new FormData(form);
             const statusDiv = document.getElementById('add-case-status');
             const spinner = document.getElementById('add-case-spinner');
-
+            
             spinner.style.display = 'block';
             statusDiv.textContent = '';
 
-            try {
-                const response = await fetch(`${API_ORIGIN}/api/admin/cases`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                spinner.style.display = 'none';
+            const formData = new FormData(form);
+            const newCase = {
+                patientId: `p${MOCK_DATA.cases.length + 1}`,
+                patientName: formData.get('patientName'),
+                medicalCondition: formData.get('medicalCondition'),
+                requestedAmount: parseInt(formData.get('requestedAmount'), 10),
+                description: formData.get('description'),
+                images: []
+            };
 
-                if (response.ok) {
-                    statusDiv.style.color = 'green';
-                    statusDiv.textContent = 'Case added successfully!';
-                    form.reset();
-                    await fetchAndRenderCases();
-                    const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
-                    updateSummaryCards(allData[0], allData[1], allData[2]);
-                } else {
-                    statusDiv.style.color = 'red';
-                    statusDiv.textContent = result.message || 'Failed to add case.';
-                }
-            } catch (error) {
-                spinner.style.display = 'none';
-                statusDiv.style.color = 'red';
-                statusDiv.textContent = 'An error occurred. Please try again.';
-                console.error('Error adding case:', error);
-            }
+            MOCK_DATA.cases.push(newCase);
+            
+            spinner.style.display = 'none';
+            statusDiv.style.color = 'green';
+            statusDiv.textContent = 'Case added successfully!';
+            form.reset();
+            loadDashboardData();
         });
 
-        // Initial Data Fetch
-        document.addEventListener('DOMContentLoaded', async () => {
+        const loadDashboardData = async () => {
             const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
             updateSummaryCards(allData[0], allData[1], allData[2]);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+            if (localStorage.getItem('isAdminLoggedIn')) {
+                loadDashboardData();
+            }
         });
     </script>
 </body>
