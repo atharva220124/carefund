@@ -87,6 +87,7 @@
             border-radius: 9999px;
             font-weight: 600;
             transition: all 0.3s ease;
+            border: none;
         }
 
         .header .logout-button:hover {
@@ -234,6 +235,7 @@
             padding: 0.5rem 1rem;
             border-radius: 9999px;
             font-weight: 600;
+            border: none;
         }
         
         .approve-button {
@@ -576,62 +578,89 @@
         </div>
     </div>
 
-    <script>
-        // Mock data to simulate API responses for a self-contained app
-        const MOCK_DATA = {
-            donators: [
-                { id: "d1", name: "John Doe", email: "john.doe@example.com", profilePic: "https://placehold.co/40x40/d1d5db/4b5563?text=JD", registrationDate: new Date().toISOString() },
-                { id: "d2", name: "Jane Smith", email: "jane.smith@example.com", profilePic: "https://placehold.co/40x40/d1d5db/4b5563?text=JS", registrationDate: new Date().toISOString() }
-            ],
-            donations: [
-                { _id: "don1", name: "Anonymous", email: null, amount: 5000, date: new Date().toISOString(), status: "Pending" },
-                { _id: "don2", name: "John Doe", email: "john.doe@example.com", amount: 1500, date: new Date().toISOString(), status: "Approved" },
-                { _id: "don3", name: "Jane Smith", email: "jane.smith@example.com", amount: 2000, date: new Date().toISOString(), status: "Rejected" },
-                { _id: "don4", name: "Anonymous", email: null, amount: 10000, date: new Date().toISOString(), status: "Pending" }
-            ],
-            cases: [
-                { patientId: "p1", patientName: "Aarav Sharma", medicalCondition: "Cardiovascular Disease", requestedAmount: 50000, description: "Funds for a critical heart surgery.", images: ["https://placehold.co/80x80/d1d5db/4b5563?text=Scan1", "https://placehold.co/80x80/d1d5db/4b5563?text=Scan2"] },
-                { patientId: "p2", patientName: "Priya Singh", medicalCondition: "Cancer Treatment", requestedAmount: 250000, description: "Chemotherapy sessions.", images: ["https://placehold.co/80x80/d1d5db/4b5563?text=Report1"] }
-            ]
-        };
-        const API_ORIGIN = '';
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Core Application Logic ---
+        // Firebase Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI elements
         const loginSection = document.getElementById('login-section');
         const dashboardSection = document.getElementById('dashboard-section');
+        const loginForm = document.getElementById('login-form');
+        const logoutButton = document.getElementById('logout-button');
+        const loginStatusDiv = document.getElementById('login-status');
+        const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
+        const allDonationsTableBody = document.getElementById('all-donations-table-body');
+        const allCasesTableBody = document.getElementById('all-cases-table-body');
+        const addCaseForm = document.getElementById('add-case-form');
+        const addCaseStatusDiv = document.getElementById('add-case-status');
+        const addCaseSpinner = document.getElementById('add-case-spinner');
+        const totalDonationsSpan = document.getElementById('total-donations');
+        const totalDonatorsSpan = document.getElementById('total-donators');
+        const patientsHelpedSpan = document.getElementById('patients-helped');
+        const totalRequestsSpan = document.getElementById('total-requests');
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const rejectionModal = document.getElementById('rejection-modal');
+        const transactionIdModal = document.getElementById('transaction-id-modal');
+        const modalMessage = document.getElementById('modal-message');
+        let currentDonationId = null;
 
-        const fetchData = async (url) => {
-            const endpoint = url.split('/').pop();
-            const data = MOCK_DATA[endpoint];
-            return data || [];
-        };
+        const showModal = (modal) => modal.style.display = 'flex';
+        const hideModal = (modal) => modal.style.display = 'none';
 
-        const updateUI = () => {
-            const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
-            if (isAdminLoggedIn) {
+        const updateUI = (user) => {
+            if (user) {
                 loginSection.style.display = 'none';
                 dashboardSection.style.display = 'grid';
+                loadDashboardData();
             } else {
                 loginSection.style.display = 'flex';
                 dashboardSection.style.display = 'none';
             }
         };
 
-        const updateSummaryCards = (donations, donators, cases) => {
-            const totalDonationsAmount = donations
-                .filter(d => d.status === 'Approved')
-                .reduce((sum, d) => sum + d.amount, 0);
-            document.getElementById('total-donations').textContent = `₹ ${totalDonationsAmount.toLocaleString()}`;
-            document.getElementById('total-donators').textContent = donators.length;
-            document.getElementById('patients-helped').textContent = donations
-                .filter(d => d.status === 'Approved')
-                .length;
-            document.getElementById('total-requests').textContent = cases.length;
+        const loadDashboardData = () => {
+            // Real-time listener for cases
+            onSnapshot(collection(db, `artifacts/${appId}/public/data/cases`), (snapshot) => {
+                const cases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCases(cases);
+                totalRequestsSpan.textContent = cases.length;
+            }, (error) => {
+                console.error("Error listening to cases:", error);
+            });
+
+            // Real-time listener for donations
+            onSnapshot(collection(db, `artifacts/${appId}/public/data/donations`), (snapshot) => {
+                const donations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderDonations(donations);
+
+                const approvedDonations = donations.filter(d => d.status === 'Approved');
+                const totalAmount = approvedDonations.reduce((sum, d) => sum + parseInt(d.amount, 10), 0);
+                totalDonationsSpan.textContent = `₹ ${totalAmount.toLocaleString()}`;
+                patientsHelpedSpan.textContent = approvedDonations.length;
+            }, (error) => {
+                console.error("Error listening to donations:", error);
+            });
+
+            // Real-time listener for donators
+            onSnapshot(collection(db, `artifacts/${appId}/users`), (snapshot) => {
+                const donators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderDonators(donators);
+                totalDonatorsSpan.textContent = donators.length;
+            }, (error) => {
+                console.error("Error listening to donators:", error);
+            });
         };
 
-        const fetchAndRenderDonators = async () => {
-            const donatorsTableBody = document.getElementById('donators-table-body');
-            const donators = await fetchData(`${API_ORIGIN}/api/admin/donators`);
+        const renderDonators = (donators) => {
             donatorsTableBody.innerHTML = '';
             if (donators.length === 0) {
                 donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>`;
@@ -650,14 +679,9 @@
                     donatorsTableBody.appendChild(row);
                 });
             }
-            return donators;
         };
 
-        const fetchAndRenderDonations = async () => {
-            const allDonationsTableBody = document.getElementById('all-donations-table-body');
-            const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
-            const donations = await fetchData(`${API_ORIGIN}/api/admin/donations`);
-
+        const renderDonations = (donations) => {
             allDonationsTableBody.innerHTML = '';
             pendingDonationsTableBody.innerHTML = '';
             
@@ -684,20 +708,17 @@
                             <td>₹ ${donation.amount}</td>
                             <td>${new Date(donation.date).toLocaleDateString()}</td>
                             <td>
-                                <button class="approve-button" data-id="${donation._id}">Approve</button>
-                                <button class="reject-button" data-id="${donation._id}">Reject</button>
+                                <button class="approve-button" data-id="${donation.id}">Approve</button>
+                                <button class="reject-button" data-id="${donation.id}">Reject</button>
                             </td>
                         `;
                         pendingDonationsTableBody.appendChild(pendingRow);
                     }
                 });
             }
-            return donations;
         };
 
-        const fetchAndRenderCases = async () => {
-            const allCasesTableBody = document.getElementById('all-cases-table-body');
-            const cases = await fetchData(`${API_ORIGIN}/api/admin/cases`);
+        const renderCases = (cases) => {
             allCasesTableBody.innerHTML = '';
             if (cases.length === 0) {
                 allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-gray-500">No cases found.</td></tr>`;
@@ -716,46 +737,49 @@
                     allCasesTableBody.appendChild(row);
                 });
             }
-            return cases;
         };
-
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const rejectionModal = document.getElementById('rejection-modal');
-        const transactionIdModal = document.getElementById('transaction-id-modal');
-        const modalMessage = document.getElementById('modal-message');
-
-        const showModal = (modal) => modal.style.display = 'flex';
-        const hideModal = (modal) => modal.style.display = 'none';
-
-        let currentDonationId = null;
-
-        // Login form submission handler
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+        
+        // Event Handlers
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('adminEmail').value;
             const password = document.getElementById('adminPassword').value;
-            const statusDiv = document.getElementById('login-status');
+
+            loginStatusDiv.textContent = 'Logging in...';
+            loginStatusDiv.style.color = 'black';
 
             if (email === "admin@carefund.com" && password === "SJCHS@123") {
-                localStorage.setItem('isAdminLoggedIn', 'true');
-                statusDiv.textContent = 'Login successful!';
-                statusDiv.style.color = 'green';
-                setTimeout(() => {
-                    updateUI();
-                    loadDashboardData();
-                }, 500);
+                 try {
+                     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                     if (initialAuthToken) {
+                         await signInWithCustomToken(auth, initialAuthToken);
+                         localStorage.setItem('isAdminLoggedIn', 'true');
+                         loginStatusDiv.textContent = 'Login successful!';
+                         loginStatusDiv.style.color = 'green';
+                     } else {
+                         throw new Error("Initial auth token is missing.");
+                     }
+                 } catch (error) {
+                     console.error("Firebase Auth Error:", error);
+                     loginStatusDiv.textContent = 'Failed to sign in. Please try again.';
+                     loginStatusDiv.style.color = 'red';
+                 }
             } else {
-                statusDiv.textContent = 'Invalid credentials.';
-                statusDiv.style.color = 'red';
+                loginStatusDiv.textContent = 'Invalid credentials.';
+                loginStatusDiv.style.color = 'red';
             }
         });
 
-        document.getElementById('logout-button').addEventListener('click', () => {
+        logoutButton.addEventListener('click', () => {
             localStorage.removeItem('isAdminLoggedIn');
-            updateUI();
+            auth.signOut().then(() => {
+                updateUI(null);
+            }).catch((error) => {
+                console.error("Error signing out:", error);
+            });
         });
 
-        document.getElementById('pending-donations-table-body').addEventListener('click', (event) => {
+        pendingDonationsTableBody.addEventListener('click', (event) => {
             const target = event.target;
             if (target.classList.contains('approve-button')) {
                 currentDonationId = target.dataset.id;
@@ -766,7 +790,6 @@
             }
         });
 
-        // Approve Donation Logic
         document.getElementById('submit-transaction-button').addEventListener('click', async () => {
             const transactionId = document.getElementById('transaction-id-input').value.trim();
             if (!transactionId) {
@@ -774,20 +797,20 @@
                 showModal(confirmationModal);
                 return;
             }
-            
-            // Find and update the donation status in the mock data
-            const donationToApprove = MOCK_DATA.donations.find(d => d._id === currentDonationId);
-            if (donationToApprove) {
-                donationToApprove.status = 'Approved';
+            try {
+                const donationRef = doc(db, `artifacts/${appId}/public/data/donations`, currentDonationId);
+                await updateDoc(donationRef, { status: 'Approved', transactionId: transactionId });
+                hideModal(transactionIdModal);
+                modalMessage.textContent = 'Donation approved successfully!';
+                showModal(confirmationModal);
+            } catch (error) {
+                console.error("Error approving donation:", error);
+                hideModal(transactionIdModal);
+                modalMessage.textContent = 'An error occurred. Please try again.';
+                showModal(confirmationModal);
             }
-
-            hideModal(transactionIdModal);
-            modalMessage.textContent = 'Donation approved successfully!';
-            showModal(confirmationModal);
-            loadDashboardData();
         });
 
-        // Reject Donation Logic
         document.getElementById('submit-reject-button').addEventListener('click', async () => {
             const reason = document.getElementById('rejection-reason').value.trim();
             if (!reason) {
@@ -795,63 +818,53 @@
                 showModal(confirmationModal);
                 return;
             }
-
-            // Find and update the donation status in the mock data
-            const donationToReject = MOCK_DATA.donations.find(d => d._id === currentDonationId);
-            if (donationToReject) {
-                donationToReject.status = 'Rejected';
+            try {
+                const donationRef = doc(db, `artifacts/${appId}/public/data/donations`, currentDonationId);
+                await updateDoc(donationRef, { status: 'Rejected', rejectionReason: reason });
+                hideModal(rejectionModal);
+                modalMessage.textContent = 'Donation rejected successfully!';
+                showModal(confirmationModal);
+            } catch (error) {
+                console.error("Error rejecting donation:", error);
+                hideModal(rejectionModal);
+                modalMessage.textContent = 'An error occurred. Please try again.';
+                showModal(confirmationModal);
             }
-
-            hideModal(rejectionModal);
-            modalMessage.textContent = 'Donation rejected successfully!';
-            showModal(confirmationModal);
-            loadDashboardData();
         });
 
-        // Close Modals
-        document.getElementById('cancel-modal-button').addEventListener('click', () => hideModal(confirmationModal));
-        document.getElementById('cancel-reject-button').addEventListener('click', () => hideModal(rejectionModal));
-        document.getElementById('cancel-transaction-button').addEventListener('click', () => hideModal(transactionIdModal));
-
-        // Handle Add Case Form Submission (Mocked)
-        document.getElementById('add-case-form').addEventListener('submit', async (e) => {
+        addCaseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
             const statusDiv = document.getElementById('add-case-status');
-            const spinner = document.getElementById('add-case-spinner');
             
-            spinner.style.display = 'block';
+            addCaseSpinner.style.display = 'block';
             statusDiv.textContent = '';
 
-            const formData = new FormData(form);
-            const newCase = {
-                patientId: `p${MOCK_DATA.cases.length + 1}`,
-                patientName: formData.get('patientName'),
-                medicalCondition: formData.get('medicalCondition'),
-                requestedAmount: parseInt(formData.get('requestedAmount'), 10),
-                description: formData.get('description'),
-                images: []
-            };
-
-            MOCK_DATA.cases.push(newCase);
-            
-            spinner.style.display = 'none';
-            statusDiv.style.color = 'green';
-            statusDiv.textContent = 'Case added successfully!';
-            form.reset();
-            loadDashboardData();
+            try {
+                const newCase = {
+                    patientName: form.patientName.value,
+                    medicalCondition: form.medicalCondition.value,
+                    requestedAmount: parseInt(form.requestedAmount.value, 10),
+                    description: form.description.value,
+                    images: [] // Image upload logic not implemented, providing a placeholder
+                };
+                await addDoc(collection(db, `artifacts/${appId}/public/data/cases`), newCase);
+                
+                addCaseSpinner.style.display = 'none';
+                statusDiv.style.color = 'green';
+                statusDiv.textContent = 'Case added successfully!';
+                form.reset();
+            } catch (error) {
+                console.error("Error adding case:", error);
+                addCaseSpinner.style.display = 'none';
+                statusDiv.style.color = 'red';
+                statusDiv.textContent = 'Failed to add case.';
+            }
         });
 
-        const loadDashboardData = async () => {
-            const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
-            updateSummaryCards(allData[0], allData[1], allData[2]);
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUI();
-            if (localStorage.getItem('isAdminLoggedIn')) {
-                loadDashboardData();
-            }
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            updateUI(user);
         });
     </script>
 </body>
