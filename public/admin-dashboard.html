@@ -1,858 +1,875 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareFund Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
-            color: #333;
-            min-height: 100vh;
-        }
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>CareFund Admin Dashboard</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+   <style>
+       body {
+           font-family: 'Inter', sans-serif;
+           background: #f0f2f5;
+           color: #333;
+           min-height: 100vh;
+       }
 
-        .dashboard-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
 
-        .sidebar {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            padding: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .sidebar-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #ecf0f1;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
+       .dashboard-layout {
+           display: grid;
+           grid-template-columns: 250px 1fr;
+           min-height: 100vh;
+       }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .nav-item:hover {
-            background-color: #34495e;
-        }
 
-        .nav-item.active {
-            background-color: #34495e;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .main-content {
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
+       .sidebar {
+           background-color: #2c3e50;
+           color: #ecf0f1;
+           padding: 2rem 1.5rem;
+           display: flex;
+           flex-direction: column;
+           gap: 1rem;
+       }
+      
+       .sidebar-logo {
+           font-size: 1.5rem;
+           font-weight: 700;
+           color: #ecf0f1;
+           margin-bottom: 2rem;
+           text-align: center;
+       }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
 
-        .header h1 {
-            font-size: 2.25rem;
-            font-weight: 700;
-            color: #2c3e50;
-        }
+       .nav-item {
+           display: flex;
+           align-items: center;
+           gap: 0.75rem;
+           padding: 0.75rem 1rem;
+           border-radius: 0.75rem;
+           transition: background-color 0.3s ease;
+           cursor: pointer;
+       }
+      
+       .nav-item:hover {
+           background-color: #34495e;
+       }
 
-        .header .logout-button {
-            background-color: #e74c3c;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
 
-        .header .logout-button:hover {
-            background-color: #c0392b;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+       .nav-item.active {
+           background-color: #34495e;
+           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+       }
+      
+       .main-content {
+           padding: 2.5rem;
+           display: flex;
+           flex-direction: column;
+           gap: 2rem;
+       }
 
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 1.5rem;
-        }
 
-        @media (min-width: 768px) {
-            .summary-cards {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
+       .header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding-bottom: 1.5rem;
+           border-bottom: 1px solid #e2e8f0;
+       }
 
-        .card {
-            background-image: linear-gradient(135deg, #ffffff, #f9fafb);
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-        }
 
-        .card-icon {
-            font-size: 2rem;
-            color: #2193b0;
-        }
+       .header h1 {
+           font-size: 2.25rem;
+           font-weight: 700;
+           color: #2c3e50;
+       }
 
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #4a5568;
-        }
 
-        .card-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2c3e50;
-        }
+       .header .logout-button {
+           background-color: #e74c3c;
+           color: white;
+           padding: 0.75rem 1.5rem;
+           border-radius: 9999px;
+           font-weight: 600;
+           transition: all 0.3s ease;
+           border: none;
+       }
 
-        .data-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
 
-        .table-container, .form-section {
-            background-color: #ffffff;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            padding: 2rem;
-        }
-        
-        .table-container h2, .form-section h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
-        }
+       .header .logout-button:hover {
+           background-color: #c0392b;
+           transform: translateY(-2px);
+           box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+       }
 
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
 
-        .data-table th, .data-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
+       .summary-cards {
+           display: grid;
+           grid-template-columns: repeat(1, 1fr);
+           gap: 1.5rem;
+       }
 
-        .data-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #4a5568;
-            text-transform: uppercase;
-        }
 
-        .data-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
+       @media (min-width: 768px) {
+           .summary-cards {
+               grid-template-columns: repeat(4, 1fr);
+           }
+       }
 
-        .data-table tr:hover {
-            background-color: #eef2f6;
-        }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+       .card {
+           background-image: linear-gradient(135deg, #ffffff, #f9fafb);
+           padding: 2rem;
+           border-radius: 1.5rem;
+           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+           text-align: center;
+           transition: transform 0.3s ease, box-shadow 0.3s ease;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: 1rem;
+       }
+      
+       .card:hover {
+           transform: translateY(-5px);
+           box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+       }
 
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #4a5568;
-        }
 
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid #dcdfe6;
-            transition: all 0.3s ease;
-        }
+       .card-icon {
+           font-size: 2rem;
+           color: #2193b0;
+       }
 
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #6dd5ed;
-            box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.5);
-        }
-        
-        .submit-button, .approve-button, .reject-button {
-            background-image: linear-gradient(135deg, #2193b0, #6dd5ed);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-        }
-        
-        .submit-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .approve-button, .reject-button {
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-weight: 600;
-        }
-        
-        .approve-button {
-            background-image: linear-gradient(135deg, #2ecc71, #27ae60);
-        }
-        .reject-button {
-            background-image: linear-gradient(135deg, #e74c3c, #c0392b);
-            margin-left: 0.5rem;
-        }
-        .approve-button:hover {
-            background-image: linear-gradient(135deg, #27ae60, #27ae60);
-        }
-        .reject-button:hover {
-            background-image: linear-gradient(135deg, #c0392b, #c0392b);
-        }
 
-        .images-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
+       .card-title {
+           font-size: 1rem;
+           font-weight: 600;
+           color: #4a5568;
+       }
 
-        .images-container img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-            border: 2px solid #e2e8f0;
-        }
 
-        /* Modal Styles */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: left;
-        }
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #2563eb;
-            animation: spin 1s ease infinite;
-            margin: 2rem auto;
-            display: none;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+       .card-value {
+           font-size: 2.5rem;
+           font-weight: 700;
+           color: #2c3e50;
+       }
 
-        /* Login Page styles */
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f0f2f5;
-        }
-        .login-card {
-            background-color: #ffffff;
-            border-radius: 2rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            padding: 3rem;
-            width: 100%;
-            max-width: 450px;
-        }
-        .login-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .login-button {
-            background-image: linear-gradient(135deg, #2193b0, #6dd5ed);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            border: none;
-        }
-    </style>
+
+       .data-section {
+           display: flex;
+           flex-direction: column;
+           gap: 1.5rem;
+       }
+
+
+       .table-container, .form-section {
+           background-color: #ffffff;
+           border-radius: 1.5rem;
+           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+           padding: 2rem;
+       }
+      
+       .table-container h2, .form-section h2 {
+           font-size: 1.5rem;
+           font-weight: 700;
+           color: #2c3e50;
+           margin-bottom: 1.5rem;
+       }
+
+
+       .data-table {
+           width: 100%;
+           border-collapse: collapse;
+       }
+
+
+       .data-table th, .data-table td {
+           padding: 1rem;
+           text-align: left;
+           border-bottom: 1px solid #e2e8f0;
+       }
+
+
+       .data-table th {
+           background-color: #f8f9fa;
+           font-weight: 600;
+           color: #4a5568;
+           text-transform: uppercase;
+       }
+
+
+       .data-table tbody tr:nth-child(even) {
+           background-color: #f8f9fa;
+       }
+
+
+       .data-table tr:hover {
+           background-color: #eef2f6;
+       }
+
+
+       .form-group {
+           margin-bottom: 1.5rem;
+       }
+
+
+       .form-group label {
+           display: block;
+           font-weight: 600;
+           margin-bottom: 0.5rem;
+           color: #4a5568;
+       }
+
+
+       .form-group input, .form-group textarea {
+           width: 100%;
+           padding: 0.75rem 1rem;
+           border-radius: 0.75rem;
+           border: 1px solid #dcdfe6;
+           transition: all 0.3s ease;
+       }
+
+
+       .form-group input:focus, .form-group textarea:focus {
+           outline: none;
+           border-color: #6dd5ed;
+           box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.5);
+       }
+      
+       .submit-button, .approve-button, .reject-button {
+           background-image: linear-gradient(135deg, #2193b0, #6dd5ed);
+           color: white;
+           padding: 1rem 2rem;
+           border-radius: 1rem;
+           font-weight: 700;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           border: none;
+       }
+      
+       .submit-button:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+       }
+      
+       .approve-button, .reject-button {
+           font-size: 0.875rem;
+           padding: 0.5rem 1rem;
+           border-radius: 9999px;
+           font-weight: 600;
+           border: none;
+       }
+      
+       .approve-button {
+           background-image: linear-gradient(135deg, #2ecc71, #27ae60);
+       }
+       .reject-button {
+           background-image: linear-gradient(135deg, #e74c3c, #c0392b);
+           margin-left: 0.5rem;
+       }
+       .approve-button:hover {
+           background-image: linear-gradient(135deg, #27ae60, #27ae60);
+       }
+       .reject-button:hover {
+           background-image: linear-gradient(135deg, #c0392b, #c0392b);
+       }
+
+
+       .images-container {
+           display: flex;
+           flex-wrap: wrap;
+           gap: 1rem;
+           margin-top: 1rem;
+       }
+
+
+       .images-container img {
+           width: 80px;
+           height: 80px;
+           object-fit: cover;
+           border-radius: 0.5rem;
+           border: 2px solid #e2e8f0;
+       }
+
+
+       /* Modal Styles */
+       .modal {
+           position: fixed;
+           z-index: 1000;
+           left: 0;
+           top: 0;
+           width: 100%;
+           height: 100%;
+           background-color: rgba(0,0,0,0.6);
+           display: none;
+           justify-content: center;
+           align-items: center;
+           backdrop-filter: blur(5px);
+       }
+       .modal-content {
+           background-color: #fff;
+           padding: 2rem;
+           border-radius: 1.5rem;
+           max-width: 500px;
+           width: 90%;
+           box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+           text-align: left;
+       }
+       .modal-buttons {
+           display: flex;
+           justify-content: flex-end;
+           gap: 1rem;
+           margin-top: 1.5rem;
+       }
+       .spinner {
+           border: 4px solid rgba(0, 0, 0, 0.1);
+           width: 36px;
+           height: 36px;
+           border-radius: 50%;
+           border-left-color: #2563eb;
+           animation: spin 1s ease infinite;
+           margin: 2rem auto;
+           display: none;
+       }
+       @keyframes spin {
+           0% { transform: rotate(0deg); }
+           100% { transform: rotate(360deg); }
+       }
+
+
+       /* Login Page styles */
+       .login-container {
+           min-height: 100vh;
+           display: none;
+           align-items: center;
+           justify-content: center;
+           background-color: #f0f2f5;
+       }
+       .login-card {
+           background-color: #ffffff;
+           border-radius: 2rem;
+           box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+           padding: 3rem;
+           width: 100%;
+           max-width: 450px;
+       }
+       .login-title {
+           font-size: 2.5rem;
+           font-weight: 700;
+           color: #2c3e50;
+           text-align: center;
+           margin-bottom: 2rem;
+       }
+       .login-button {
+           background-image: linear-gradient(135deg, #2193b0, #6dd5ed);
+           color: white;
+           padding: 1rem 2rem;
+           border-radius: 1rem;
+           font-weight: 700;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           width: 100%;
+           border: none;
+       }
+   </style>
 </head>
 <body>
-    <!-- Main container to toggle visibility of login/dashboard -->
-    <div id="app-container">
-        <!-- Login Section (Initially visible if not logged in) -->
-        <div id="login-section" class="login-container">
-            <div class="login-card">
-                <h1 class="login-title">Admin Login</h1>
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="adminEmail">Email</label>
-                        <input type="email" id="adminEmail" name="email" placeholder="admin@carefund.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="adminPassword">Password</label>
-                        <input type="password" id="adminPassword" name="password" placeholder="********" required>
-                    </div>
-                    <button type="submit" class="login-button">Login</button>
-                    <div id="login-status" class="mt-4 text-center"></div>
-                </form>
-            </div>
-        </div>
+   <!-- Main container to toggle visibility of login/dashboard -->
+   <div id="app-container">
+       <!-- Admin Dashboard Section -->
+       <div id="dashboard-section" class="dashboard-layout">
+           <!-- Sidebar -->
+           <div class="sidebar">
+               <div class="sidebar-logo">CareFund Admin</div>
+               <div class="nav-links">
+                   <a href="#" class="nav-item active">
+                       <i class="fas fa-home"></i>
+                       <span>Dashboard</span>
+                   </a>
+                   <a href="#" class="nav-item">
+                       <i class="fas fa-hand-holding-heart"></i>
+                       <span>Donations</span>
+                   </a>
+                   <a href="#" class="nav-item">
+                       <i class="fas fa-user-friends"></i>
+                       <span>Donators</span>
+                   </a>
+                   <a href="#" class="nav-item">
+                       <i class="fas fa-hospital-user"></i>
+                       <span>Cases</span>
+                   </a>
+               </div>
+           </div>
 
-        <!-- Admin Dashboard Section (Hidden by default) -->
-        <div id="dashboard-section" class="dashboard-layout" style="display: none;">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="sidebar-logo">CareFund Admin</div>
-                <div class="nav-links">
-                    <a href="#" class="nav-item active">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-hand-holding-heart"></i>
-                        <span>Donations</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-user-friends"></i>
-                        <span>Donators</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-hospital-user"></i>
-                        <span>Cases</span>
-                    </a>
-                </div>
-            </div>
 
-            <!-- Main Content -->
-            <div class="main-content">
-                <!-- Header -->
-                <div class="header">
-                    <h1>Dashboard Overview</h1>
-                    <button id="logout-button" class="logout-button">Logout</button>
-                </div>
-                
-                <!-- Summary Cards -->
-                <div class="summary-cards">
-                    <div class="card">
-                        <div class="card-icon"><i class="fas fa-rupee-sign"></i></div>
-                        <p class="card-title">Total Donations</p>
-                        <p class="card-value" id="total-donations">₹ 0</p>
-                    </div>
-                    <div class="card">
-                        <div class="card-icon"><i class="fas fa-users"></i></div>
-                        <p class="card-title">Total Donators</p>
-                        <p class="card-value" id="total-donators">0</p>
-                    </div>
-                    <div class="card">
-                        <div class="card-icon"><i class="fas fa-hand-holding-medical"></i></div>
-                        <p class="card-title">Patients Helped</p>
-                        <p class="card-value" id="patients-helped">0</p>
-                    </div>
-                    <div class="card">
-                        <div class="card-icon"><i class="fas fa-list-alt"></i></div>
-                        <p class="card-title">Total Requests</p>
-                        <p class="card-value" id="total-requests">0</p>
-                    </div>
-                </div>
+           <!-- Main Content -->
+           <div class="main-content">
+               <!-- Header -->
+               <div class="header">
+                   <h1>Dashboard Overview</h1>
+                   <!-- The logout button now simply reloads the page to reset the session. -->
+                   <button id="logout-button" class="logout-button">Logout</button>
+               </div>
+              
+               <!-- Summary Cards -->
+               <div class="summary-cards">
+                   <div class="card">
+                       <div class="card-icon"><i class="fas fa-rupee-sign"></i></div>
+                       <p class="card-title">Total Donations</p>
+                       <p class="card-value" id="total-donations">₹ 0</p>
+                   </div>
+                   <div class="card">
+                       <div class="card-icon"><i class="fas fa-users"></i></div>
+                       <p class="card-title">Total Donators</p>
+                       <p class="card-value" id="total-donators">0</p>
+                   </div>
+                   <div class="card">
+                       <div class="card-icon"><i class="fas fa-hand-holding-medical"></i></div>
+                       <p class="card-title">Patients Helped</p>
+                       <p class="card-value" id="patients-helped">0</p>
+                   </div>
+                   <div class="card">
+                       <div class="card-icon"><i class="fas fa-list-alt"></i></div>
+                       <p class="card-title">Total Requests</p>
+                       <p class="card-value" id="total-requests">0</p>
+                   </div>
+               </div>
 
-                <!-- Main Content Sections -->
-                <div class="data-section grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Add a New Live Case Form -->
-                    <div class="form-section">
-                        <h2>Add a New Live Case</h2>
-                        <form id="add-case-form" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label for="patientName">Patient Name</label>
-                                <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="medicalCondition">Medical Condition</label>
-                                <input type="text" id="medicalCondition" name="medicalCondition" placeholder="e.g., Cancer Treatment" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="requestedAmount">Requested Amount (INR)</label>
-                                <input type="number" id="requestedAmount" name="requestedAmount" placeholder="e.g., 50000" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="description">Description</label>
-                                <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="images">Photos (Max 5)</label>
-                                <input type="file" id="images" name="images" multiple accept="image/*">
-                            </div>
-                            <button type="submit" class="submit-button">Add Case</button>
-                            <div id="add-case-status" class="mt-4 text-center"></div>
-                            <div id="add-case-spinner" class="spinner"></div>
-                        </form>
-                    </div>
 
-                    <!-- Pending Donations Table -->
-                    <div class="table-container">
-                        <h2>Pending Donations</h2>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Donator Name</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pending-donations-table-body">
-                                <!-- Content will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="data-section grid grid-cols-1 gap-8">
-                    <!-- All Donations Table -->
-                    <div class="table-container">
-                        <h2>All Donations</h2>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Donator Name</th>
-                                    <th>Email</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="all-donations-table-body">
-                                <!-- Content will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
+               <!-- Main Content Sections -->
+               <div class="data-section grid grid-cols-1 lg:grid-cols-2 gap-8">
+                   <!-- Add a New Live Case Form -->
+                   <div class="form-section">
+                       <h2>Add a New Live Case</h2>
+                       <form id="add-case-form" enctype="multipart/form-data">
+                           <div class="form-group">
+                               <label for="patientName">Patient Name</label>
+                               <input type="text" id="patientName" name="patientName" placeholder="Patient's full name" required>
+                           </div>
+                           <div class="form-group">
+                               <label for="medicalCondition">Medical Condition</label>
+                               <input type="text" id="medicalCondition" name="medicalCondition" placeholder="e.g., Cancer Treatment" required>
+                           </div>
+                           <div class="form-group">
+                               <label for="requestedAmount">Requested Amount (INR)</label>
+                               <input type="number" id="requestedAmount" name="requestedAmount" placeholder="e.g., 50000" required>
+                           </div>
+                           <div class="form-group">
+                               <label for="description">Description</label>
+                               <textarea id="description" name="description" rows="4" placeholder="Briefly describe the case and urgency" required></textarea>
+                           </div>
+                           <div class="form-group">
+                               <label for="images">Photos (Max 5)</label>
+                               <input type="file" id="images" name="images" multiple accept="image/*">
+                           </div>
+                           <button type="submit" class="submit-button">Add Case</button>
+                           <div id="add-case-status" class="mt-4 text-center"></div>
+                           <div id="add-case-spinner" class="spinner"></div>
+                       </form>
+                   </div>
 
-                    <!-- Registered Donators Table -->
-                    <div class="table-container">
-                        <h2>Registered Donators</h2>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Profile</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Registered On</th>
-                                </tr>
-                            </thead>
-                            <tbody id="donators-table-body">
-                                <!-- Content will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
 
-                    <!-- All Cases Table -->
-                    <div class="table-container">
-                        <h2>All Cases</h2>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Patient ID</th>
-                                    <th>Patient Name</th>
-                                    <th>Condition</th>
-                                    <th>Amount</th>
-                                    <th>Description</th>
-                                    <th>Images</th>
-                                </tr>
-                            </thead>
-                            <tbody id="all-cases-table-body">
-                                <!-- Content will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                   <!-- Pending Donations Table -->
+                   <div class="table-container">
+                       <h2>Pending Donations</h2>
+                       <table class="data-table">
+                           <thead>
+                               <tr>
+                                   <th>Donator Name</th>
+                                   <th>Amount</th>
+                                   <th>Date</th>
+                                   <th>Action</th>
+                               </tr>
+                           </thead>
+                           <tbody id="pending-donations-table-body">
+                               <!-- Content will be populated by JavaScript -->
+                           </tbody>
+                       </table>
+                   </div>
+               </div>
+              
+               <div class="data-section grid grid-cols-1 gap-8">
+                   <!-- All Donations Table -->
+                   <div class="table-container">
+                       <h2>All Donations</h2>
+                       <table class="data-table">
+                           <thead>
+                               <tr>
+                                   <th>Donator Name</th>
+                                   <th>Email</th>
+                                   <th>Amount</th>
+                                   <th>Date</th>
+                                   <th>Status</th>
+                               </tr>
+                           </thead>
+                           <tbody id="all-donations-table-body">
+                               <!-- Content will be populated by JavaScript -->
+                           </tbody>
+                       </table>
+                   </div>
 
-    <!-- Modals for User Interactions (replaces alert and prompt) -->
-    <!-- Confirmation Modal -->
-    <div id="confirmation-modal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold mb-4">Confirm Action</h3>
-            <p id="modal-message" class="text-gray-700 mb-6"></p>
-            <div class="modal-buttons">
-                <button id="cancel-modal-button" class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
-                <button id="confirm-modal-button" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">Confirm</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Rejection Modal -->
-    <div id="rejection-modal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold mb-4">Reject Donation</h3>
-            <p class="text-gray-700">Please provide a reason for rejecting this donation:</p>
-            <textarea id="rejection-reason" class="w-full mt-2 p-2 border rounded-lg" rows="4" placeholder="e.g., Transaction ID not found or amount mismatch" required></textarea>
-            <div class="modal-buttons">
-                <button id="cancel-reject-button" class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
-                <button id="submit-reject-button" class="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700">Reject</button>
-            </div>
-        </div>
-    </div>
+                   <!-- Registered Donators Table -->
+                   <div class="table-container">
+                       <h2>Registered Donators</h2>
+                       <table class="data-table">
+                           <thead>
+                               <tr>
+                                   <th>Profile</th>
+                                   <th>Name</th>
+                                   <th>Email</th>
+                                   <th>Registered On</th>
+                               </tr>
+                           </thead>
+                           <tbody id="donators-table-body">
+                               <!-- Content will be populated by JavaScript -->
+                           </tbody>
+                       </table>
+                   </div>
 
-    <!-- Transaction ID Modal -->
-    <div id="transaction-id-modal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold mb-4">Enter Transaction ID</h3>
-            <p class="text-gray-700">Please enter the UPI Transaction ID to confirm the donation.</p>
-            <input type="text" id="transaction-id-input" class="w-full mt-2 p-2 border rounded-lg" placeholder="e.g., A1B2C3D4E5" required />
-            <div class="modal-buttons">
-                <button id="cancel-transaction-button" class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
-                <button id="submit-transaction-button" class="bg-green-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-700">Confirm</button>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Mock data to simulate API responses for a self-contained app
-        const MOCK_DATA = {
-            donators: [
-                { id: "d1", name: "John Doe", email: "john.doe@example.com", profilePic: "https://placehold.co/40x40/d1d5db/4b5563?text=JD", registrationDate: new Date().toISOString() },
-                { id: "d2", name: "Jane Smith", email: "jane.smith@example.com", profilePic: "https://placehold.co/40x40/d1d5db/4b5563?text=JS", registrationDate: new Date().toISOString() }
-            ],
-            donations: [
-                { _id: "don1", name: "Anonymous", email: null, amount: 5000, date: new Date().toISOString(), status: "Pending" },
-                { _id: "don2", name: "John Doe", email: "john.doe@example.com", amount: 1500, date: new Date().toISOString(), status: "Approved" },
-                { _id: "don3", name: "Jane Smith", email: "jane.smith@example.com", amount: 2000, date: new Date().toISOString(), status: "Rejected" },
-                { _id: "don4", name: "Anonymous", email: null, amount: 10000, date: new Date().toISOString(), status: "Pending" }
-            ],
-            cases: [
-                { patientId: "p1", patientName: "Aarav Sharma", medicalCondition: "Cardiovascular Disease", requestedAmount: 50000, description: "Funds for a critical heart surgery.", images: ["https://placehold.co/80x80/d1d5db/4b5563?text=Scan1", "https://placehold.co/80x80/d1d5db/4b5563?text=Scan2"] },
-                { patientId: "p2", patientName: "Priya Singh", medicalCondition: "Cancer Treatment", requestedAmount: 250000, description: "Chemotherapy sessions.", images: ["https://placehold.co/80x80/d1d5db/4b5563?text=Report1"] }
-            ]
-        };
-        const API_ORIGIN = '';
+                   <!-- All Cases Table -->
+                   <div class="table-container">
+                       <h2>All Cases</h2>
+                       <table class="data-table">
+                           <thead>
+                               <tr>
+                                   <th>Patient ID</th>
+                                   <th>Patient Name</th>
+                                   <th>Condition</th>
+                                   <th>Amount</th>
+                                   <th>Description</th>
+                                   <th>Images</th>
+                               </tr>
+                           </thead>
+                           <tbody id="all-cases-table-body">
+                               <!-- Content will be populated by JavaScript -->
+                           </tbody>
+                       </table>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
 
-        // --- Core Application Logic ---
-        const loginSection = document.getElementById('login-section');
-        const dashboardSection = document.getElementById('dashboard-section');
 
-        const fetchData = async (url) => {
-            const endpoint = url.split('/').pop();
-            const data = MOCK_DATA[endpoint];
-            return data || [];
-        };
+   <!-- Modals for User Interactions (replaces alert and prompt) -->
+   <!-- Confirmation Modal -->
+   <div id="confirmation-modal" class="modal">
+       <div class="modal-content">
+           <h3 class="text-xl font-bold mb-4">Confirm Action</h3>
+           <p id="modal-message" class="text-gray-700 mb-6"></p>
+           <div class="modal-buttons">
+               <button id="cancel-modal-button" class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+               <button id="confirm-modal-button" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">Confirm</button>
+           </div>
+       </div>
+   </div>
 
-        const updateUI = () => {
-            const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
-            if (isAdminLoggedIn) {
-                loginSection.style.display = 'none';
-                dashboardSection.style.display = 'grid';
-            } else {
-                loginSection.style.display = 'flex';
-                dashboardSection.style.display = 'none';
-            }
-        };
 
-        const updateSummaryCards = (donations, donators, cases) => {
-            const totalDonationsAmount = donations
-                .filter(d => d.status === 'Approved')
-                .reduce((sum, d) => sum + d.amount, 0);
-            document.getElementById('total-donations').textContent = `₹ ${totalDonationsAmount.toLocaleString()}`;
-            document.getElementById('total-donators').textContent = donators.length;
-            document.getElementById('patients-helped').textContent = donations
-                .filter(d => d.status === 'Approved')
-                .length;
-            document.getElementById('total-requests').textContent = cases.length;
-        };
+   <!-- Rejection Modal -->
+   <div id="rejection-modal" class="modal">
+       <div class="modal-content">
+           <h3 class="text-xl font-bold mb-4">Reject Donation</h3>
+           <p class="text-gray-700">Please provide a reason for rejecting this donation:</p>
+           <textarea id="rejection-reason" class="w-full mt-2 p-2 border rounded-lg" rows="4" placeholder="e.g., Transaction ID not found or amount mismatch" required></textarea>
+           <div class="modal-buttons">
+               <button id="cancel-reject-button" class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+               <button id="submit-reject-button" class="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700">Reject</button>
+           </div>
+       </div>
+   </div>
 
-        const fetchAndRenderDonators = async () => {
-            const donatorsTableBody = document.getElementById('donators-table-body');
-            const donators = await fetchData(`${API_ORIGIN}/api/admin/donators`);
-            donatorsTableBody.innerHTML = '';
-            if (donators.length === 0) {
-                donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>`;
-            } else {
-                donators.forEach(donator => {
-                    const row = document.createElement('tr');
-                    const profilePicSrc = donator.profilePic || 'https://placehold.co/40x40/d1d5db/4b5563?text=N/A';
-                    row.innerHTML = `
-                        <td class="flex items-center">
-                            <img src="${profilePicSrc}" alt="${donator.name}'s profile picture" class="w-10 h-10 rounded-full mr-4">
-                        </td>
-                        <td>${donator.name || 'Anonymous'}</td>
-                        <td>${donator.email || 'N/A'}</td>
-                        <td>${new Date(donator.registrationDate).toLocaleDateString()}</td>
-                    `;
-                    donatorsTableBody.appendChild(row);
-                });
-            }
-            return donators;
-        };
 
-        const fetchAndRenderDonations = async () => {
-            const allDonationsTableBody = document.getElementById('all-donations-table-body');
-            const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
-            const donations = await fetchData(`${API_ORIGIN}/api/admin/donations`);
+   <!-- Transaction ID Modal -->
+   <div id="transaction-id-modal" class="modal">
+       <div class="modal-content">
+           <h3 class="text-xl font-bold mb-4">Enter Transaction ID</h3>
+           <p class="text-gray-700">Please enter the UPI Transaction ID to confirm the donation.</p>
+           <input type="text" id="transaction-id-input" class="w-full mt-2 p-2 border rounded-lg" placeholder="e.g., A1B2C3D4E5" required />
+           <div class="modal-buttons">
+               <button id="cancel-transaction-button" class="bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+               <button id="submit-transaction-button" class="bg-green-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-700">Confirm</button>
+           </div>
+       </div>
+   </div>
 
-            allDonationsTableBody.innerHTML = '';
-            pendingDonationsTableBody.innerHTML = '';
-            
-            if (donations.length === 0) {
-                allDonationsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-gray-500">No donations yet.</td></tr>`;
-                pendingDonationsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No pending donations.</td></tr>`;
-            } else {
-                donations.forEach(donation => {
-                    const row = document.createElement('tr');
-                    const statusColor = donation.status === 'Approved' ? 'text-green-600' : donation.status === 'Rejected' ? 'text-red-600' : 'text-yellow-600';
-                    row.innerHTML = `
-                        <td>${donation.name || 'Anonymous'}</td>
-                        <td>${donation.email || 'N/A'}</td>
-                        <td>₹ ${donation.amount}</td>
-                        <td>${new Date(donation.date).toLocaleDateString()}</td>
-                        <td><span class="font-semibold ${statusColor}">${donation.status}</span></td>
-                    `;
-                    allDonationsTableBody.appendChild(row);
 
-                    if (donation.status === 'Pending') {
-                        const pendingRow = document.createElement('tr');
-                        pendingRow.innerHTML = `
-                            <td>${donation.name || 'Anonymous'}</td>
-                            <td>₹ ${donation.amount}</td>
-                            <td>${new Date(donation.date).toLocaleDateString()}</td>
-                            <td>
-                                <button class="approve-button" data-id="${donation._id}">Approve</button>
-                                <button class="reject-button" data-id="${donation._id}">Reject</button>
-                            </td>
-                        `;
-                        pendingDonationsTableBody.appendChild(pendingRow);
-                    }
-                });
-            }
-            return donations;
-        };
+   <!-- Firebase SDKs -->
+   <script type="module">
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+       import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const fetchAndRenderCases = async () => {
-            const allCasesTableBody = document.getElementById('all-cases-table-body');
-            const cases = await fetchData(`${API_ORIGIN}/api/admin/cases`);
-            allCasesTableBody.innerHTML = '';
-            if (cases.length === 0) {
-                allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-gray-500">No cases found.</td></tr>`;
-            } else {
-                cases.forEach(c => {
-                    const row = document.createElement('tr');
-                    const imagesHtml = c.images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/40x40/d1d5db/4b5563?text=N/A';">`).join('');
-                    row.innerHTML = `
-                        <td>${c.patientId}</td>
-                        <td>${c.patientName}</td>
-                        <td>${c.medicalCondition}</td>
-                        <td>₹ ${c.requestedAmount}</td>
-                        <td>${c.description}</td>
-                        <td><div class="flex flex-wrap gap-2">${imagesHtml}</div></td>
-                    `;
-                    allCasesTableBody.appendChild(row);
-                });
-            }
-            return cases;
-        };
 
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const rejectionModal = document.getElementById('rejection-modal');
-        const transactionIdModal = document.getElementById('transaction-id-modal');
-        const modalMessage = document.getElementById('modal-message');
+       // Firebase Setup
+       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+       const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+       const app = initializeApp(firebaseConfig);
+       const auth = getAuth(app);
+       const db = getFirestore(app);
 
-        const showModal = (modal) => modal.style.display = 'flex';
-        const hideModal = (modal) => modal.style.display = 'none';
 
-        let currentDonationId = null;
+       // Sign in anonymously and log a warning that this is a public admin panel
+       signInAnonymously(auth).then(() => {
+           console.warn("Signed in anonymously. This is a public admin panel for demonstration purposes only. All users have access to admin functions.");
+       }).catch((error) => {
+           console.error("Anonymous sign-in failed:", error);
+       });
 
-        // Login form submission handler
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
-            const statusDiv = document.getElementById('login-status');
 
-            if (email === "admin@carefund.com" && password === "SJCHS@123") {
-                localStorage.setItem('isAdminLoggedIn', 'true');
-                statusDiv.textContent = 'Login successful!';
-                statusDiv.style.color = 'green';
-                setTimeout(() => {
-                    updateUI();
-                    loadDashboardData();
-                }, 500);
-            } else {
-                statusDiv.textContent = 'Invalid credentials.';
-                statusDiv.style.color = 'red';
-            }
-        });
+       // UI elements
+       const dashboardSection = document.getElementById('dashboard-section');
+       const logoutButton = document.getElementById('logout-button');
+       const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
+       const allDonationsTableBody = document.getElementById('all-donations-table-body');
+       const allCasesTableBody = document.getElementById('all-cases-table-body');
+       const addCaseForm = document.getElementById('add-case-form');
+       const addCaseStatusDiv = document.getElementById('add-case-status');
+       const addCaseSpinner = document.getElementById('add-case-spinner');
+       const totalDonationsSpan = document.getElementById('total-donations');
+       const totalDonatorsSpan = document.getElementById('total-donators');
+       const patientsHelpedSpan = document.getElementById('patients-helped');
+       const totalRequestsSpan = document.getElementById('total-requests');
+       const confirmationModal = document.getElementById('confirmation-modal');
+       const rejectionModal = document.getElementById('rejection-modal');
+       const transactionIdModal = document.getElementById('transaction-id-modal');
+       const modalMessage = document.getElementById('modal-message');
+       let currentDonationId = null;
 
-        document.getElementById('logout-button').addEventListener('click', () => {
-            localStorage.removeItem('isAdminLoggedIn');
-            updateUI();
-        });
 
-        document.getElementById('pending-donations-table-body').addEventListener('click', (event) => {
-            const target = event.target;
-            if (target.classList.contains('approve-button')) {
-                currentDonationId = target.dataset.id;
-                showModal(transactionIdModal);
-            } else if (target.classList.contains('reject-button')) {
-                currentDonationId = target.dataset.id;
-                showModal(rejectionModal);
-            }
-        });
+       const showModal = (modal) => modal.style.display = 'flex';
+       const hideModal = (modal) => modal.style.display = 'none';
 
-        // Approve Donation Logic
-        document.getElementById('submit-transaction-button').addEventListener('click', async () => {
-            const transactionId = document.getElementById('transaction-id-input').value.trim();
-            if (!transactionId) {
-                modalMessage.textContent = 'Transaction ID is required to approve.';
-                showModal(confirmationModal);
-                return;
-            }
-            
-            // Find and update the donation status in the mock data
-            const donationToApprove = MOCK_DATA.donations.find(d => d._id === currentDonationId);
-            if (donationToApprove) {
-                donationToApprove.status = 'Approved';
-            }
 
-            hideModal(transactionIdModal);
-            modalMessage.textContent = 'Donation approved successfully!';
-            showModal(confirmationModal);
-            loadDashboardData();
-        });
+       const loadDashboardData = () => {
+           // Real-time listener for cases
+           onSnapshot(collection(db, `artifacts/${appId}/public/data/cases`), (snapshot) => {
+               const cases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+               renderCases(cases);
+               totalRequestsSpan.textContent = cases.length;
+           }, (error) => {
+               console.error("Error listening to cases:", error);
+           });
 
-        // Reject Donation Logic
-        document.getElementById('submit-reject-button').addEventListener('click', async () => {
-            const reason = document.getElementById('rejection-reason').value.trim();
-            if (!reason) {
-                modalMessage.textContent = 'A reason is required to reject the donation.';
-                showModal(confirmationModal);
-                return;
-            }
 
-            // Find and update the donation status in the mock data
-            const donationToReject = MOCK_DATA.donations.find(d => d._id === currentDonationId);
-            if (donationToReject) {
-                donationToReject.status = 'Rejected';
-            }
+           // Real-time listener for donations
+           onSnapshot(collection(db, `artifacts/${appId}/public/data/donations`), (snapshot) => {
+               const donations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+               renderDonations(donations);
 
-            hideModal(rejectionModal);
-            modalMessage.textContent = 'Donation rejected successfully!';
-            showModal(confirmationModal);
-            loadDashboardData();
-        });
 
-        // Close Modals
-        document.getElementById('cancel-modal-button').addEventListener('click', () => hideModal(confirmationModal));
-        document.getElementById('cancel-reject-button').addEventListener('click', () => hideModal(rejectionModal));
-        document.getElementById('cancel-transaction-button').addEventListener('click', () => hideModal(transactionIdModal));
+               const approvedDonations = donations.filter(d => d.status === 'Approved');
+               const totalAmount = approvedDonations.reduce((sum, d) => sum + parseInt(d.amount, 10), 0);
+               totalDonationsSpan.textContent = `₹ ${totalAmount.toLocaleString()}`;
+               patientsHelpedSpan.textContent = approvedDonations.length;
+           }, (error) => {
+               console.error("Error listening to donations:", error);
+           });
 
-        // Handle Add Case Form Submission (Mocked)
-        document.getElementById('add-case-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const statusDiv = document.getElementById('add-case-status');
-            const spinner = document.getElementById('add-case-spinner');
-            
-            spinner.style.display = 'block';
-            statusDiv.textContent = '';
 
-            const formData = new FormData(form);
-            const newCase = {
-                patientId: `p${MOCK_DATA.cases.length + 1}`,
-                patientName: formData.get('patientName'),
-                medicalCondition: formData.get('medicalCondition'),
-                requestedAmount: parseInt(formData.get('requestedAmount'), 10),
-                description: formData.get('description'),
-                images: []
-            };
+           // Real-time listener for donators
+           onSnapshot(collection(db, `artifacts/${appId}/users`), (snapshot) => {
+               const donators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+               renderDonators(donators);
+               totalDonatorsSpan.textContent = donators.length;
+           }, (error) => {
+               console.error("Error listening to donators:", error);
+           });
+       };
 
-            MOCK_DATA.cases.push(newCase);
-            
-            spinner.style.display = 'none';
-            statusDiv.style.color = 'green';
-            statusDiv.textContent = 'Case added successfully!';
-            form.reset();
-            loadDashboardData();
-        });
 
-        const loadDashboardData = async () => {
-            const allData = await Promise.all([fetchAndRenderDonations(), fetchAndRenderDonators(), fetchAndRenderCases()]);
-            updateSummaryCards(allData[0], allData[1], allData[2]);
-        };
+       const renderDonators = (donators) => {
+           donatorsTableBody.innerHTML = '';
+           if (donators.length === 0) {
+               donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>`;
+           } else {
+               donators.forEach(donator => {
+                   const row = document.createElement('tr');
+                   const profilePicSrc = donator.profilePic || 'https://placehold.co/40x40/d1d5db/4b5563?text=N/A';
+                   row.innerHTML = `
+                       <td class="flex items-center">
+                           <img src="${profilePicSrc}" alt="${donator.name}'s profile picture" class="w-10 h-10 rounded-full mr-4">
+                       </td>
+                       <td>${donator.name || 'Anonymous'}</td>
+                       <td>${donator.email || 'N/A'}</td>
+                       <td>${new Date(donator.registrationDate).toLocaleDateString()}</td>
+                   `;
+                   donatorsTableBody.appendChild(row);
+               });
+           }
+       };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUI();
-            if (localStorage.getItem('isAdminLoggedIn')) {
-                loadDashboardData();
-            }
-        });
-    </script>
+
+       const renderDonations = (donations) => {
+           allDonationsTableBody.innerHTML = '';
+           pendingDonationsTableBody.innerHTML = '';
+          
+           if (donations.length === 0) {
+               allDonationsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-gray-500">No donations yet.</td></tr>`;
+               pendingDonationsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No pending donations.</td></tr>`;
+           } else {
+               donations.forEach(donation => {
+                   const row = document.createElement('tr');
+                   const statusColor = donation.status === 'Approved' ? 'text-green-600' : donation.status === 'Rejected' ? 'text-red-600' : 'text-yellow-600';
+                   row.innerHTML = `
+                       <td>${donation.name || 'Anonymous'}</td>
+                       <td>${donation.email || 'N/A'}</td>
+                       <td>₹ ${donation.amount}</td>
+                       <td>${new Date(donation.date).toLocaleDateString()}</td>
+                       <td><span class="font-semibold ${statusColor}">${donation.status}</span></td>
+                   `;
+                   allDonationsTableBody.appendChild(row);
+
+
+                   if (donation.status === 'Pending') {
+                       const pendingRow = document.createElement('tr');
+                       pendingRow.innerHTML = `
+                           <td>${donation.name || 'Anonymous'}</td>
+                           <td>₹ ${donation.amount}</td>
+                           <td>${new Date(donation.date).toLocaleDateString()}</td>
+                           <td>
+                               <button class="approve-button" data-id="${donation.id}">Approve</button>
+                               <button class="reject-button" data-id="${donation.id}">Reject</button>
+                           </td>
+                       `;
+                       pendingDonationsTableBody.appendChild(pendingRow);
+                   }
+               });
+           }
+       };
+
+
+       const renderCases = (cases) => {
+           allCasesTableBody.innerHTML = '';
+           if (cases.length === 0) {
+               allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-gray-500">No cases found.</td></tr>`;
+           } else {
+               cases.forEach(c => {
+                   const row = document.createElement('tr');
+                   const imagesHtml = c.images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/40x40/d1d5db/4b5563?text=N/A';">`).join('');
+                   row.innerHTML = `
+                       <td>${c.patientId}</td>
+                       <td>${c.patientName}</td>
+                       <td>${c.medicalCondition}</td>
+                       <td>₹ ${c.requestedAmount}</td>
+                       <td>${c.description}</td>
+                       <td><div class="flex flex-wrap gap-2">${imagesHtml}</div></td>
+                   `;
+                   allCasesTableBody.appendChild(row);
+               });
+           }
+       };
+      
+       // Event Handlers
+       logoutButton.addEventListener('click', () => {
+           localStorage.removeItem('isAdminLoggedIn');
+           window.location.reload();
+       });
+
+
+       pendingDonationsTableBody.addEventListener('click', (event) => {
+           const target = event.target;
+           if (target.classList.contains('approve-button')) {
+               currentDonationId = target.dataset.id;
+               showModal(transactionIdModal);
+           } else if (target.classList.contains('reject-button')) {
+               currentDonationId = target.dataset.id;
+               showModal(rejectionModal);
+           }
+       });
+
+
+       document.getElementById('submit-transaction-button').addEventListener('click', async () => {
+           const transactionId = document.getElementById('transaction-id-input').value.trim();
+           if (!transactionId) {
+               modalMessage.textContent = 'Transaction ID is required to approve.';
+               showModal(confirmationModal);
+               return;
+           }
+           try {
+               const donationRef = doc(db, `artifacts/${appId}/public/data/donations`, currentDonationId);
+               await updateDoc(donationRef, { status: 'Approved', transactionId: transactionId });
+               hideModal(transactionIdModal);
+               modalMessage.textContent = 'Donation approved successfully!';
+               showModal(confirmationModal);
+           } catch (error) {
+               console.error("Error approving donation:", error);
+               hideModal(transactionIdModal);
+               modalMessage.textContent = 'An error occurred. Please try again.';
+               showModal(confirmationModal);
+           }
+       });
+
+
+       document.getElementById('submit-reject-button').addEventListener('click', async () => {
+           const reason = document.getElementById('rejection-reason').value.trim();
+           if (!reason) {
+               modalMessage.textContent = 'A reason is required to reject the donation.';
+               showModal(confirmationModal);
+               return;
+           }
+           try {
+               const donationRef = doc(db, `artifacts/${appId}/public/data/donations`, currentDonationId);
+               await updateDoc(donationRef, { status: 'Rejected', rejectionReason: reason });
+               hideModal(rejectionModal);
+               modalMessage.textContent = 'Donation rejected successfully!';
+               showModal(confirmationModal);
+           } catch (error) {
+               console.error("Error rejecting donation:", error);
+               hideModal(rejectionModal);
+               modalMessage.textContent = 'An error occurred. Please try again.';
+               showModal(confirmationModal);
+           }
+       });
+
+
+       addCaseForm.addEventListener('submit', async (e) => {
+           e.preventDefault();
+           const form = e.target;
+           const statusDiv = document.getElementById('add-case-status');
+          
+           addCaseSpinner.style.display = 'block';
+           statusDiv.textContent = '';
+
+
+           try {
+               const newCase = {
+                   patientName: form.patientName.value,
+                   medicalCondition: form.medicalCondition.value,
+                   requestedAmount: parseInt(form.requestedAmount.value, 10),
+                   description: form.description.value,
+                   images: []
+               };
+               await addDoc(collection(db, `artifacts/${appId}/public/data/cases`), newCase);
+              
+               addCaseSpinner.style.display = 'none';
+               statusDiv.style.color = 'green';
+               statusDiv.textContent = 'Case added successfully!';
+               form.reset();
+           } catch (error) {
+               console.error("Error adding case:", error);
+               addCaseSpinner.style.display = 'none';
+               statusDiv.style.color = 'red';
+               statusDiv.textContent = 'Failed to add case.';
+           }
+       });
+
+
+       // Initial data load
+       loadDashboardData();
+
+
+       // Close Modals
+       document.getElementById('cancel-modal-button').addEventListener('click', () => hideModal(confirmationModal));
+       document.getElementById('cancel-reject-button').addEventListener('click', () => hideModal(rejectionModal));
+       document.getElementById('cancel-transaction-button').addEventListener('click', () => hideModal(transactionIdModal));
+   </script>
 </body>
 </html>
+
+
+
