@@ -237,11 +237,11 @@
             </div>
             <div class="card">
                 <p class="card-title">Patients Helped</p>
-                <p class="card-value">124</p>
+                <p class="card-value" id="patients-helped">0</p>
             </div>
             <div class="card">
                 <p class="card-title">Total Requests</p>
-                <p class="card-value">250</p>
+                <p class="card-value" id="total-requests">0</p>
             </div>
         </div>
 
@@ -355,14 +355,35 @@
   <script>
     const API_ORIGIN = window.location.origin;
 
+    // A single function to fetch and populate all summary cards
+    const fetchPublicStats = async () => {
+        try {
+            const response = await fetch(API_ORIGIN + '/api/public/stats');
+            if (!response.ok) throw new Error('Failed to fetch stats.');
+            const stats = await response.json();
+            
+            document.getElementById('total-donations').textContent = `₹ ${stats.totalDonations.toLocaleString()}`;
+            document.getElementById('total-donators').textContent = stats.totalDonators;
+            document.getElementById('patients-helped').textContent = stats.patientsHelped;
+            document.getElementById('total-requests').textContent = stats.totalRequests;
+
+        } catch (error) {
+            console.error('Error fetching public stats:', error);
+            // Fallback for demonstration purposes
+            document.getElementById('total-donations').textContent = 'Error';
+            document.getElementById('total-donators').textContent = 'Error';
+            document.getElementById('patients-helped').textContent = 'Error';
+            document.getElementById('total-requests').textContent = 'Error';
+        }
+    };
+
+
     const fetchDonators = async () => {
         const donatorsTableBody = document.getElementById('donators-table-body');
-        const totalDonatorsCount = document.getElementById('total-donators');
         try {
             const response = await fetch(API_ORIGIN + '/api/admin/donators');
             if (!response.ok) throw new Error('Failed to fetch donator data.');
             const donators = await response.json();
-            totalDonatorsCount.textContent = donators.length;
             donatorsTableBody.innerHTML = '';
             if (donators.length === 0) {
                 donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>`;
@@ -388,15 +409,11 @@
     const fetchDonations = async () => {
         const allDonationsTableBody = document.getElementById('all-donations-table-body');
         const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
-        const totalDonationsAmount = document.getElementById('total-donations');
         try {
             const response = await fetch(API_ORIGIN + '/api/admin/donations');
             if (!response.ok) throw new Error('Failed to fetch donation data.');
             const donations = await response.json();
             
-            const totalAmount = donations.filter(d => d.status === 'Approved').reduce((sum, d) => sum + parseInt(d.amount), 0);
-            totalDonationsAmount.textContent = `₹ ${totalAmount.toLocaleString()}`;
-
             allDonationsTableBody.innerHTML = '';
             pendingDonationsTableBody.innerHTML = '';
             
@@ -423,8 +440,8 @@
                             <td>₹ ${donation.amount}</td>
                             <td>${new Date(donation.date).toLocaleDateString()}</td>
                             <td>
-                                <button class="approve-button" onclick="approveDonation(${donation.id})">Approve</button>
-                                <button class="reject-button" onclick="rejectDonation(${donation.id})">Reject</button>
+                                <button class="approve-button" onclick="approveDonation('${donation._id}')">Approve</button>
+                                <button class="reject-button" onclick="rejectDonation('${donation._id}')">Reject</button>
                             </td>
                         `;
                         pendingDonationsTableBody.appendChild(pendingRow);
@@ -453,6 +470,7 @@
             if (response.ok) {
                 alert('Donation approved!');
                 fetchDonations();
+                fetchPublicStats(); // Refresh stats on approval
             } else {
                 alert('Failed to approve donation.');
             }
@@ -502,10 +520,10 @@
                     const row = document.createElement('tr');
                     const imagesHtml = c.images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md">`).join('');
                     row.innerHTML = `
-                        <td>${c.patientId}</td>
-                        <td>${c.patientName}</td>
-                        <td>${c.medicalCondition}</td>
-                        <td>₹ ${c.requestedAmount}</td>
+                        <td>${c.patientId || c._id}</td>
+                        <td>${c.patient_name}</td>
+                        <td>${c.medical_condition}</td>
+                        <td>₹ ${c.requested_amount}</td>
                         <td>${c.description}</td>
                         <td><div class="flex flex-wrap gap-2">${imagesHtml}</div></td>
                     `;
@@ -518,6 +536,7 @@
     };
     
     document.addEventListener('DOMContentLoaded', () => {
+        fetchPublicStats(); // Fetch public stats on page load
         fetchDonators();
         fetchDonations();
         fetchCases();
@@ -537,7 +556,7 @@
                     alert('Case added successfully!');
                     addCaseForm.reset();
                     fetchCases();
-                    fetchDonations();
+                    fetchPublicStats(); // Refresh stats on new case
                 } else {
                     alert('Failed to add case.');
                 }
