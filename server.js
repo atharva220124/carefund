@@ -12,11 +12,6 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const { put } = require('@vercel/blob');
 
-// NOTE: @vercel/speed-insights is a front-end library.
-// It should be added directly to your HTML files (e.g., dashboard.html) using a <script> tag,
-// not imported into this Node.js backend.
-// Example: <script type="module" src="/_vercel/speed-insights/script.js"></script>
-
 // Load environment variables from .env file
 dotenv.config();
 
@@ -33,6 +28,16 @@ mongoose.connect(process.env.MONGO_URI)
 }).catch(err => {
     console.error("MongoDB connection error:", err);
 });
+
+// --- NEW: Define a Mongoose Schema and Model for Donators ---
+const donatorSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    email: String,
+    profilePic: String,
+    registrationDate: { type: Date, default: Date.now }
+});
+const Donator = mongoose.model('Donator', donatorSchema);
 
 // --- NEW: Define a Mongoose Schema and Model for Cases ---
 const caseSchema = new mongoose.Schema({
@@ -66,9 +71,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // This prevents the 'EROFS: read-only file system' error on Vercel.
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-// Temporary in-memory databases (These will be replaced by Postgres for cases)
-const donatorsDB = [];
 
 // Redirect the root URL to the dashboard
 app.get("/", (req, res) => {
@@ -183,6 +185,7 @@ app.post("/donate", async (req, res) => {
     }
 });
 
+// --- UPDATED: Use Mongoose model for Donator registration ---
 app.post('/api/donater/google-register', async (req, res) => {
     const idToken = req.body.id_token;
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -194,22 +197,21 @@ app.post('/api/donater/google-register', async (req, res) => {
         });
         const payload = ticket.getPayload();
         
-        const existingDonator = donatorsDB.find(d => d.email === payload.email);
-        if (existingDonator) {
-            return res.status(200).json({ message: 'Welcome back! You are already registered.', donator: existingDonator, redirect: '/user-dashboard.html' });
+        let donator = await Donator.findOne({ email: payload.email });
+        if (donator) {
+            return res.status(200).json({ message: 'Welcome back! You are already registered.', donator: donator, redirect: '/user-dashboard.html' });
         }
         
-        const newDonator = {
+        const newDonator = new Donator({
             id: payload.sub,
             name: payload.name,
             email: payload.email,
             profilePic: payload.picture,
-            registrationDate: new Date().toISOString()
-        };
-        donatorsDB.push(newDonator);
+        });
+        donator = await newDonator.save();
         
-        console.log('New donator registered:', newDonator);
-        res.status(200).json({ message: 'Registration successful!', donator: newDonator, redirect: '/user-dashboard.html' });
+        console.log('New donator registered:', donator);
+        res.status(200).json({ message: 'Registration successful!', donator: donator, redirect: '/user-dashboard.html' });
         
     } catch (error) {
         console.error('Google login verification failed:', error);
@@ -229,8 +231,15 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-app.get('/api/admin/donators', (req, res) => {
-    res.json(donatorsDB);
+// --- UPDATED: Fetch donators from MongoDB ---
+app.get('/api/admin/donators', async (req, res) => {
+    try {
+        const donators = await Donator.find().sort({ registrationDate: -1 });
+        res.json(donators);
+    } catch (error) {
+        console.error('Error fetching donators from database:', error);
+        res.status(500).json({ message: 'Error fetching donators.' });
+    }
 });
 
 // --- UPDATED: Fetch donations from MongoDB ---
@@ -335,6 +344,30 @@ app.get('/api/public/cases', async (req, res) => {
     } catch (error) {
         console.error('Error fetching public cases from database:', error);
         res.status(500).json({ message: 'Error fetching public cases.' });
+    }
+});
+
+// --- NEW: API endpoint to get public stats from MongoDB ---
+app.get('/api/public/stats', async (req, res) => {
+    try {
+        const totalDonations = await Donation.aggregate([
+            { $match: { status: 'Approved' } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+
+        const totalDonators = await Donator.countDocuments();
+        const patientsHelped = await Case.countDocuments();
+
+        const stats = {
+            totalDonations: totalDonations.length > 0 ? totalDonations[0].total : 0,
+            totalDonators: totalDonators,
+            patientsHelped: patientsHelped,
+            totalRequests: patientsHelped // Assuming patients helped and total requests are the same count
+        };
+        res.json(stats);
+    } catch (error) {
+        console.error('Error fetching public stats:', error);
+        res.status(500).json({ message: 'Error fetching public stats.' });
     }
 });
 
