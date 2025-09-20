@@ -352,7 +352,7 @@
         </div>
     </div>
     
-  <script>
+<script>
     const API_ORIGIN = window.location.origin;
 
     const fetchDonators = async () => {
@@ -360,7 +360,12 @@
         const totalDonatorsCount = document.getElementById('total-donators');
         try {
             const response = await fetch(API_ORIGIN + '/api/admin/donators');
-            if (!response.ok) throw new Error('Failed to fetch donator data.');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Server error or no JSON response' }));
+                console.error('Error fetching donators:', errorData.message);
+                donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-red-500">Error fetching donators: ${errorData.message}</td></tr>`;
+                return;
+            }
             const donators = await response.json();
             totalDonatorsCount.textContent = donators.length;
             donatorsTableBody.innerHTML = '';
@@ -382,6 +387,7 @@
             }
         } catch (error) {
             console.error('Error fetching donators:', error);
+            donatorsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-red-500">An unexpected error occurred.</td></tr>`;
         }
     };
 
@@ -391,7 +397,13 @@
         const totalDonationsAmount = document.getElementById('total-donations');
         try {
             const response = await fetch(API_ORIGIN + '/api/admin/donations');
-            if (!response.ok) throw new Error('Failed to fetch donation data.');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Server error or no JSON response' }));
+                console.error('Error fetching donations:', errorData.message);
+                allDonationsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-red-500">Error fetching donations: ${errorData.message}</td></tr>`;
+                pendingDonationsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-red-500">Error fetching pending donations: ${errorData.message}</td></tr>`;
+                return;
+            }
             const donations = await response.json();
             
             const totalAmount = donations.filter(d => d.status === 'Approved').reduce((sum, d) => sum + parseInt(d.amount), 0);
@@ -423,8 +435,8 @@
                             <td>₹ ${donation.amount}</td>
                             <td>${new Date(donation.date).toLocaleDateString()}</td>
                             <td>
-                                <button class="approve-button" onclick="approveDonation(${donation.id})">Approve</button>
-                                <button class="reject-button" onclick="rejectDonation(${donation.id})">Reject</button>
+                                <button class="approve-button" onclick="approveDonation('${donation._id}')">Approve</button>
+                                <button class="reject-button" onclick="rejectDonation('${donation._id}')">Reject</button>
                             </td>
                         `;
                         pendingDonationsTableBody.appendChild(pendingRow);
@@ -433,10 +445,13 @@
             }
         } catch (error) {
             console.error('Error fetching donations:', error);
+            allDonationsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-red-500">An unexpected error occurred.</td></tr>`;
+            pendingDonationsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-red-500">An unexpected error occurred.</td></tr>`;
         }
     };
     
-    const approveDonation = async (id) => {
+    // Making functions globally accessible by attaching to window object
+    window.approveDonation = async (id) => {
         const transactionId = prompt("Please enter the Transaction ID:");
         if (!transactionId) {
             alert("Transaction ID is required to approve.");
@@ -454,7 +469,9 @@
                 alert('Donation approved!');
                 fetchDonations();
             } else {
-                alert('Failed to approve donation.');
+                // Better error handling for clearer feedback
+                const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+                alert(`Failed to approve donation: ${errorData.message || 'Check console for details.'}`);
             }
         } catch (error) {
             console.error('Error approving donation:', error);
@@ -462,7 +479,7 @@
         }
     };
     
-    const rejectDonation = async (id) => {
+    window.rejectDonation = async (id) => {
         const reason = prompt("Please provide a reason for rejection:");
         if (!reason) {
             alert("A reason is required to reject the donation.");
@@ -480,7 +497,9 @@
                 alert('Donation rejected!');
                 fetchDonations();
             } else {
-                alert('Failed to reject donation.');
+                 // Better error handling for clearer feedback
+                const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+                alert(`Failed to reject donation: ${errorData.message || 'Check console for details.'}`);
             }
         } catch (error) {
             console.error('Error rejecting donation:', error);
@@ -492,7 +511,12 @@
         const allCasesTableBody = document.getElementById('all-cases-table-body');
         try {
             const response = await fetch(API_ORIGIN + '/api/admin/cases');
-            if (!response.ok) throw new Error('Failed to fetch cases data.');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Server error or no JSON response' }));
+                console.error('Error fetching cases:', errorData.message);
+                allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-red-500">Error fetching cases: ${errorData.message}</td></tr>`;
+                return;
+            }
             const cases = await response.json();
             allCasesTableBody.innerHTML = '';
             if (cases.length === 0) {
@@ -502,10 +526,10 @@
                     const row = document.createElement('tr');
                     const imagesHtml = c.images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md">`).join('');
                     row.innerHTML = `
-                        <td>${c.patientId}</td>
-                        <td>${c.patientName}</td>
-                        <td>${c.medicalCondition}</td>
-                        <td>₹ ${c.requestedAmount}</td>
+                        <td>${c.patient_id}</td>
+                        <td>${c.patient_name}</td>
+                        <td>${c.medical_condition}</td>
+                        <td>₹ ${c.requested_amount}</td>
                         <td>${c.description}</td>
                         <td><div class="flex flex-wrap gap-2">${imagesHtml}</div></td>
                     `;
@@ -514,6 +538,7 @@
             }
         } catch (error) {
             console.error('Error fetching cases:', error);
+            allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-red-500">An unexpected error occurred.</td></tr>`;
         }
     };
     
