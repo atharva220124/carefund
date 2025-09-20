@@ -1,4 +1,3 @@
-// Import necessary modules
 const express = require("express");
 const bodyParser = require("body-parser");
 const QRCode = require("qrcode");
@@ -8,7 +7,6 @@ const { OAuth2Client } = require('google-auth-library');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const multer = require('multer');
 const cors = require('cors');
-// --- NEW: Import Mongoose for MongoDB connection ---
 const mongoose = require('mongoose');
 const { put } = require('@vercel/blob');
 
@@ -21,7 +19,7 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use(cors());
 
-// --- UPDATED: Connect to MongoDB Atlas via Mongoose without deprecated options ---
+// Connect to MongoDB Atlas via Mongoose
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log("MongoDB connected successfully.");
@@ -29,7 +27,7 @@ mongoose.connect(process.env.MONGO_URI)
     console.error("MongoDB connection error:", err);
 });
 
-// --- NEW: Define a Mongoose Schema and Model for Donators ---
+// Define Mongoose Schemas and Models
 const donatorSchema = new mongoose.Schema({
     id: String,
     name: String,
@@ -39,7 +37,6 @@ const donatorSchema = new mongoose.Schema({
 });
 const Donator = mongoose.model('Donator', donatorSchema);
 
-// --- NEW: Define a Mongoose Schema and Model for Cases ---
 const caseSchema = new mongoose.Schema({
     patient_name: String,
     medical_condition: String,
@@ -51,7 +48,6 @@ const caseSchema = new mongoose.Schema({
 });
 const Case = mongoose.model('Case', caseSchema);
 
-// --- NEW: Define a Mongoose Schema and Model for Donations ---
 const donationSchema = new mongoose.Schema({
     name: String,
     email: String,
@@ -64,20 +60,19 @@ const donationSchema = new mongoose.Schema({
 const Donation = mongoose.model('Donation', donationSchema);
 
 
-// --- FIX: Initialize Google Generative AI once at the start ---
+// Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- FIX: Change Multer to use in-memory storage ---
-// This prevents the 'EROFS: read-only file system' error on Vercel.
+// Multer to use in-memory storage, preventing Vercel file system errors
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Redirect the root URL to the dashboard
 app.get("/", (req, res) => {
-    res.redirect("/dashboard");
+    res.redirect("/dashboard.html");
 });
 
-// --- UPDATED: Route to handle donation form submission and save to MongoDB ---
+// Route to handle donation form submission and save to MongoDB
 app.post("/donate", async (req, res) => {
     const { amount, name, email } = req.body;
     const upiLink = `upi://pay?pa=${process.env.UPI_ID}&pn=${encodeURIComponent(
@@ -185,7 +180,7 @@ app.post("/donate", async (req, res) => {
     }
 });
 
-// --- UPDATED: Use Mongoose model for Donator registration ---
+// Route for Google Sign-in registration
 app.post('/api/donater/google-register', async (req, res) => {
     const idToken = req.body.id_token;
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -219,6 +214,7 @@ app.post('/api/donater/google-register', async (req, res) => {
     }
 });
 
+// Admin login route
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'carefund';
@@ -231,7 +227,7 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// --- UPDATED: Fetch donators from MongoDB ---
+// Fetch donators from MongoDB
 app.get('/api/admin/donators', async (req, res) => {
     try {
         const donators = await Donator.find().sort({ registrationDate: -1 });
@@ -242,7 +238,7 @@ app.get('/api/admin/donators', async (req, res) => {
     }
 });
 
-// --- UPDATED: Fetch donations from MongoDB ---
+// Fetch donations from MongoDB
 app.get('/api/admin/donations', async (req, res) => {
     try {
         const donations = await Donation.find().sort({ date: -1 });
@@ -253,7 +249,7 @@ app.get('/api/admin/donations', async (req, res) => {
     }
 });
 
-// --- UPDATED: Endpoint for approving a donation in MongoDB ---
+// Endpoint for approving a donation in MongoDB
 app.post('/api/admin/approve-donation', async (req, res) => {
     const { id, transactionId } = req.body;
     try {
@@ -274,7 +270,7 @@ app.post('/api/admin/approve-donation', async (req, res) => {
     }
 });
 
-// --- UPDATED: Endpoint for rejecting a donation in MongoDB ---
+// Endpoint for rejecting a donation in MongoDB
 app.post('/api/admin/reject-donation', async (req, res) => {
     const { id, reason } = req.body;
     try {
@@ -295,7 +291,7 @@ app.post('/api/admin/reject-donation', async (req, res) => {
     }
 });
 
-// --- UPDATED: New logic to save and retrieve cases from MongoDB Atlas ---
+// Logic to save and retrieve cases from MongoDB Atlas
 app.route('/api/admin/cases')
     .get(async (req, res) => {
         try {
@@ -336,7 +332,7 @@ app.route('/api/admin/cases')
         }
     });
 
-// --- UPDATED: Retrieve cases from MongoDB Atlas for the public page ---
+// Retrieve cases from MongoDB Atlas for the public page
 app.get('/api/public/cases', async (req, res) => {
     try {
         const cases = await Case.find().sort({ date_added: -1 });
@@ -347,7 +343,7 @@ app.get('/api/public/cases', async (req, res) => {
     }
 });
 
-// --- NEW: API endpoint to get public stats from MongoDB ---
+// API endpoint to get public stats from MongoDB
 app.get('/api/public/stats', async (req, res) => {
     try {
         const totalDonations = await Donation.aggregate([
@@ -371,7 +367,7 @@ app.get('/api/public/stats', async (req, res) => {
     }
 });
 
-// --- UPDATED API ENDPOINT ---
+// API endpoint to get a user's donations
 app.post('/api/my-donations', async (req, res) => {
     const userEmail = req.body.email;
     try {
@@ -383,7 +379,7 @@ app.post('/api/my-donations', async (req, res) => {
     }
 });
 
-// --- FIX: Corrected AI Chatbot route ---
+// Corrected AI Chatbot route
 app.post('/api/chat', async (req, res) => {
     try {
         const { history } = req.body;
@@ -416,7 +412,7 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
