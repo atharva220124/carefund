@@ -13,6 +13,27 @@ const { put } = require('@vercel/blob');
 // Load environment variables from .env file
 dotenv.config();
 
+// --- CRITICAL: IMMEDIATE CHECK FOR ENVIRONMENT VARIABLES ---
+const requiredEnvVars = [
+    'MONGO_URI', 
+    'GEMINI_API_KEY', 
+    'GOOGLE_CLIENT_ID', 
+    'UPI_ID', 
+    // VERCEL_BLOB_READ_WRITE_TOKEN is required for 'put'
+    'BLOB_READ_WRITE_TOKEN' 
+];
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`🔴 CRITICAL ERROR: Environment variable ${envVar} is missing.`);
+        // For Vercel Serverless Functions, throwing an error here will cause the crash you see.
+        // It's better to exit only during local development, but in Vercel, this check helps identify the issue.
+        // process.exit(1); // Keep this commented out for Vercel deployment but remember to check logs!
+    }
+}
+// --- END: ENVIRONMENT VARIABLE CHECK ---
+
+
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
@@ -60,21 +81,20 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// --- START: CRITICAL FIX FOR MONGOOSE TIMEOUT ERROR ---
+// --- START: CRITICAL FIX FOR MONGOOSE TIMEOUT ERROR (Retained and Correct) ---
 
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB Atlas via Mongoose with explicit timeouts
 mongoose.connect(process.env.MONGO_URI, {
-    // Increase the timeout for server selection (often relates to buffering timeout)
     serverSelectionTimeoutMS: 20000, 
-    // Increase the socket timeout for long-running operations (like image uploads)
     socketTimeoutMS: 45000, 
 })
 .then(() => {
     console.log("MongoDB connected successfully. 🟢");
     
     // --- START SERVER ONLY AFTER successful DB connection ---
+    // NOTE: This structure is REQUIRED for stability.
     app.listen(PORT, () => {
         console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
@@ -325,9 +345,20 @@ app.route('/api/admin/cases')
         }
     })
     .post(upload.array('images', 5), async (req, res) => {
+        // --- ADDED ROBUST ERROR LOGGING FOR VERCEL BLOB UPLOAD ---
         try {
+            // Check for files before proceeding with upload
+            if (!req.files || req.files.length === 0) {
+                 console.log('No files uploaded for case.');
+            }
+            
             // Placeholder for image upload (Vercel Blob)
-            const uploadPromises = req.files.map(file => put(file.originalname, file.buffer, { access: 'public' }));
+            const uploadPromises = req.files.map(file => put(
+                `${Date.now()}_${file.originalname}`, // Prepend timestamp to filename for uniqueness
+                file.buffer, 
+                { access: 'public' }
+            ));
+            
             const uploadedBlobs = await Promise.all(uploadPromises);
             const imageUrls = uploadedBlobs.map(blob => blob.url);
 
@@ -350,9 +381,11 @@ app.route('/api/admin/cases')
             res.status(201).json({ message: 'Case added successfully!', case: savedCase });
 
         } catch (error) {
-            console.error('Error adding case or uploading images:', error);
-            res.status(500).json({ message: 'Error adding case. Please try again.' });
+            console.error('❌ CRASH SUSPECTED HERE. Error adding case or uploading images:', error);
+            // This detailed log helps diagnose Vercel Blob token/permission issues
+            res.status(500).json({ message: 'Error adding case. Please check Vercel Blob token/permissions and payload size.', error: error.message });
         }
+        // --- END: ADDED ROBUST ERROR LOGGING FOR VERCEL BLOB UPLOAD ---
     });
 
 // Retrieve cases from MongoDB Atlas for the public page
