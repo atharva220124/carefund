@@ -33,3 +33,8 @@
   },
   "homepage": "https://github.com/atharva220124/carefund#readme"
 }
+"scripts": {
+    "dev": "node server.js",  <-- ADD THIS LINE
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  }
