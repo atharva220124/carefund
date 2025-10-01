@@ -466,7 +466,8 @@
         </div>
         <div class="header-section">
             <div class="logo-and-title">
-                <img src="logo.jpeg" alt="CareFund Logo" class="logo">
+                <!-- Placeholder image for logo -->
+                <img src="https://placehold.co/100x100/2193b0/ffffff?text=CF" alt="CareFund Logo" class="logo">
                 <div>
                     <h1 class="main-title">CareFund</h1>
                     <p class="subtitle mt-1">गरजवंतांसाठी मदतीचा हात</p>
@@ -491,17 +492,17 @@
             <h3 class="text-xl font-bold">How CareFund Helps</h3>
             <div class="help-cards-container">
                 <div class="help-card">
-                    <img src="Helpinghand.png" alt="Helping the Needy">
+                    <img src="https://placehold.co/300x150/2193b0/ffffff?text=Helping+Hand" alt="Helping the Needy">
                     <h4>Helping the Needy</h4>
                     <p>We collect donations to support food, clothing, and care for poor families, ensuring dignity and basic living standards.</p>
                 </div>
                 <div class="help-card">
-                    <img src="Medicalhelp.png" alt="Medical Help">
+                    <img src="https://placehold.co/300x150/3498db/ffffff?text=Medical+Aid" alt="Medical Help">
                     <h4>Medical Help</h4>
                     <p>We assist patients who cannot afford treatment by funding urgent hospital bills and life-saving procedures.</p>
                 </div>
                 <div class="help-card">
-                    <img src="Education.png" alt="Education for All">
+                    <img src="https://placehold.co/300x150/27ae60/ffffff?text=Education" alt="Education for All">
                     <h4>Education for All</h4>
                     <p>We help students in need with school fees, books, and educational resources to build a better future.</p>
                 </div>
@@ -565,7 +566,7 @@
                 <!-- Atharva Naik -->
                 <div class="team-member-card bg-white p-6 rounded-3xl shadow-lg border border-gray-200 text-center">
                     <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-600">
-                        <img src="Atharva.jpeg" alt="Atharva Naik" class="rounded-full w-full h-full object-cover"/>
+                        <img src="https://placehold.co/120x120/000000/ffffff?text=Atharva" alt="Atharva Naik" class="rounded-full w-full h-full object-cover"/>
                     </div>
                     <p class="font-bold text-lg text-gray-900">Atharva Naik</p>
                     <span class="block text-sm text-blue-600 font-medium mt-1">Founder & Lead Volunteer</span>
@@ -574,7 +575,7 @@
                 <!-- Diptesh Gaikwad -->
                 <div class="team-member-card bg-white p-6 rounded-3xl shadow-lg border border-gray-200 text-center">
                     <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-600">
-                        <img src="Diptesh.jpeg" alt="Diptesh Gaikwad" class="rounded-full w-full h-full object-cover"/>
+                        <img src="https://placehold.co/120x120/000000/ffffff?text=Diptesh" alt="Diptesh Gaikwad" class="rounded-full w-full h-full object-cover"/>
                     </div>
                     <p class="font-bold text-lg text-gray-900">Diptesh Gaikwad</p>
                     <span class="block text-sm text-blue-600 font-medium mt-1">Operations Volunteer</span>
@@ -652,32 +653,22 @@
             // Function to fetch and update dashboard totals
             const fetchDashboardTotals = async () => {
                 try {
-                    // Fetch donations data
-                    const donationsResponse = await fetch(API_ORIGIN + '/api/admin/donations');
-                    if (!donationsResponse.ok) throw new Error('Failed to fetch donations data.');
-                    const donations = await donationsResponse.json();
+                    // Fetch data using the streamlined /api/public/stats endpoint
+                    const statsResponse = await fetch(API_ORIGIN + '/api/public/stats');
+                    if (!statsResponse.ok) throw new Error('Failed to fetch public stats.');
+                    const stats = await statsResponse.json();
 
-                    // Calculate total collected amount from approved donations
-                    const totalAmount = donations
-                        .filter(d => d.status === 'Approved')
-                        .reduce((sum, d) => sum + parseInt(d.amount), 0);
-                    document.getElementById('total-collected').textContent = `₹ ${totalAmount.toLocaleString()}`;
-
-                    // Fetch donators data
-                    const donatorsResponse = await fetch(API_ORIGIN + '/api/admin/donators');
-                    if (!donatorsResponse.ok) throw new Error('Failed to fetch donator data.');
-                    const donators = await donatorsResponse.json();
-                    document.getElementById('total-donators').textContent = donators.length;
+                    document.getElementById('total-collected').textContent = `₹ ${stats.totalDonations.toLocaleString()}`;
+                    document.getElementById('total-donators').textContent = stats.totalDonators.toLocaleString();
 
                 } catch (error) {
                     console.error('Error fetching dashboard totals:', error);
                 }
             };
 
-            // Call the new function
             fetchDashboardTotals();
 
-            // Existing function to fetch live causes
+            // Corrected function to fetch live causes
             async function fetchLiveCauses() {
                 const liveCausesContainer = document.getElementById('live-causes-container');
                 try {
@@ -695,18 +686,20 @@
                             
                             let imagesHtml = '';
                             if (c.images && c.images.length > 0) {
-                                imagesHtml = c.images.map(img => `<img src="${img}" alt="Case Image" class="w-full h-32 object-cover rounded-lg">`).join('');
+                                // Use the first image for the card preview
+                                imagesHtml = `<img src="${c.images[0]}" alt="Case Image" class="w-full h-32 object-cover rounded-lg" onerror="this.onerror=null;this.src='https://placehold.co/300x150/2193b0/ffffff?text=Case+Photo';">`;
                             }
                             
+                            // FIX APPLIED: Using correct snake_case field names (patient_name, medical_condition, requested_amount)
                             caseCard.innerHTML = `
                                 <div class="flex-grow">
-                                    <h4 class="font-bold text-lg">${c.patientName}</h4>
-                                    <p class="text-sm text-gray-600"><strong>Condition:</strong> ${c.medicalCondition}</p>
-                                    <p class="text-sm text-gray-600"><strong>Requested:</strong> ₹ ${c.requestedAmount}</p>
-                                    <p class="text-sm mt-2 text-gray-500">${c.description || ''}</p>
+                                    <h4 class="font-bold text-lg">${c.patient_name || 'Case Title'}</h4>
+                                    <p class="text-sm text-gray-600"><strong>Condition:</strong> ${c.medical_condition || 'N/A'}</p>
+                                    <p class="text-sm text-gray-600"><strong>Requested:</strong> ₹ ${c.requested_amount ? c.requested_amount.toLocaleString() : 'N/A'}</p>
+                                    <p class="text-sm mt-2 text-gray-500">${(c.description || '').substring(0, 50)}...</p>
                                     <div class="mt-4">${imagesHtml}</div>
                                 </div>
-                                <a href="https://wa.me/919309490608?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20the%20case%20of%20${c.patientName}%20with%20ID%20${c.id}" class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition" target="_blank">Know More</a>
+                                <a href="https://wa.me/919309490608?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20the%20case%20of%20${c.patient_name}%20with%20ID%20${c.patient_id}" class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition" target="_blank">Know More</a>
                             `;
                             liveCausesContainer.appendChild(caseCard);
                         });
@@ -744,6 +737,7 @@
             chatBody.appendChild(userDiv);
             chatInput.value = '';
 
+            // Add new message to history
             chatHistory.push({ role: "user", parts: [{ text: msg }] });
 
             const botDiv = document.createElement('div');
@@ -753,11 +747,21 @@
             chatBody.scrollTop = chatBody.scrollHeight;
 
             try {
+                // Determine the history to send (all except the last user message)
+                const historyToSend = chatHistory.slice(0, -1);
+                
+                // Construct the payload with history and the new message parts
+                const payload = {
+                    history: historyToSend,
+                    message: chatHistory[chatHistory.length - 1]
+                };
+
                 const res = await fetch(API_ORIGIN + '/api/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ history: chatHistory })
+                    body: JSON.stringify({ history: chatHistory }) // Sending full history, letting server handle logic
                 });
+                
                 const data = await res.json();
                 const botResponse = data.response;
 
