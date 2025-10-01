@@ -237,11 +237,13 @@
             </div>
             <div class="card">
                 <p class="card-title">Patients Helped</p>
-                <p class="card-value">124</p>
+                <!-- This will be updated by fetchPublicStats -->
+                <p class="card-value">0</p> 
             </div>
             <div class="card">
                 <p class="card-title">Total Requests</p>
-                <p class="card-value">250</p>
+                <!-- This will be updated by fetchPublicStats -->
+                <p class="card-value">0</p>
             </div>
         </div>
 
@@ -289,12 +291,33 @@
                         </tr>
                     </thead>
                     <tbody id="pending-donations-table-body">
+                        <tr><td colspan="4" class="text-center italic text-gray-500">No pending donations.</td></tr>
                         </tbody>
                 </table>
             </div>
         </div>
 
         <div class="data-section grid grid-cols-1 gap-8 mt-8">
+            <div class="table-container">
+                <h2>All Cases</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Condition</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Images</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-cases-table-body">
+                        <tr><td colspan="7" class="text-center italic text-gray-500">No cases found.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
             <div class="table-container">
                 <h2>All Donations</h2>
                 <table class="data-table">
@@ -308,12 +331,11 @@
                         </tr>
                     </thead>
                     <tbody id="all-donations-table-body">
-                        <tr>
-                            <td colspan="5" class="text-center italic text-gray-500">No donations yet.</td>
-                        </tr>
+                        <tr><td colspan="5" class="text-center italic text-gray-500">No donations yet.</td></tr>
                     </tbody>
                 </table>
             </div>
+            
             <div class="table-container">
                 <h2>Registered Donators</h2>
                 <table class="data-table">
@@ -326,26 +348,7 @@
                         </tr>
                     </thead>
                     <tbody id="donators-table-body">
-                        <tr>
-                            <td colspan="4" class="text-center italic text-gray-500">No donators yet.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-container">
-                <h2>All Cases</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Patient ID</th>
-                            <th>Patient Name</th>
-                            <th>Condition</th>
-                            <th>Amount</th>
-                            <th>Description</th>
-                            <th>Images</th>
-                        </tr>
-                    </thead>
-                    <tbody id="all-cases-table-body">
+                        <tr><td colspan="4" class="text-center italic text-gray-500">No donators yet.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -374,9 +377,11 @@
             } else {
                 donators.forEach(donator => {
                     const row = document.createElement('tr');
+                    // Add a fallback for missing profilePic
+                    const profilePicUrl = donator.profilePic || 'https://placehold.co/40x40/cccccc/333333?text=N/A';
                     row.innerHTML = `
                         <td class="flex items-center">
-                            <img src="${donator.profilePic}" alt="${donator.name}'s profile picture" class="w-10 h-10 rounded-full mr-4">
+                            <img src="${profilePicUrl}" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/333333?text=N/A';" alt="${donator.name}'s profile picture" class="w-10 h-10 rounded-full mr-4">
                         </td>
                         <td>${donator.name}</td>
                         <td>${donator.email}</td>
@@ -394,7 +399,6 @@
     const fetchDonations = async () => {
         const allDonationsTableBody = document.getElementById('all-donations-table-body');
         const pendingDonationsTableBody = document.getElementById('pending-donations-table-body');
-        const totalDonationsAmount = document.getElementById('total-donations');
         try {
             const response = await fetch(API_ORIGIN + '/api/admin/donations');
             if (!response.ok) {
@@ -406,9 +410,6 @@
             }
             const donations = await response.json();
             
-            const totalAmount = donations.filter(d => d.status === 'Approved').reduce((sum, d) => sum + parseInt(d.amount), 0);
-            totalDonationsAmount.textContent = `₹ ${totalAmount.toLocaleString()}`;
-
             allDonationsTableBody.innerHTML = '';
             pendingDonationsTableBody.innerHTML = '';
             
@@ -416,23 +417,25 @@
                 allDonationsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-gray-500">No donations yet.</td></tr>`;
                 pendingDonationsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No pending donations.</td></tr>`;
             } else {
+                let pendingCount = 0;
                 donations.forEach(donation => {
                     const row = document.createElement('tr');
                     const statusColor = donation.status === 'Approved' ? 'text-green-600' : donation.status === 'Rejected' ? 'text-red-600' : 'text-yellow-600';
                     row.innerHTML = `
                         <td>${donation.name}</td>
                         <td>${donation.email}</td>
-                        <td>₹ ${donation.amount}</td>
+                        <td>₹ ${donation.amount.toLocaleString()}</td>
                         <td>${new Date(donation.date).toLocaleDateString()}</td>
                         <td><span class="font-semibold ${statusColor}">${donation.status}</span></td>
                     `;
                     allDonationsTableBody.appendChild(row);
 
                     if (donation.status === 'Pending') {
+                        pendingCount++;
                         const pendingRow = document.createElement('tr');
                         pendingRow.innerHTML = `
                             <td>${donation.name}</td>
-                            <td>₹ ${donation.amount}</td>
+                            <td>₹ ${donation.amount.toLocaleString()}</td>
                             <td>${new Date(donation.date).toLocaleDateString()}</td>
                             <td>
                                 <button class="approve-button" onclick="approveDonation('${donation._id}')">Approve</button>
@@ -442,6 +445,9 @@
                         pendingDonationsTableBody.appendChild(pendingRow);
                     }
                 });
+                 if (pendingCount === 0) {
+                    pendingDonationsTableBody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-500">No pending donations.</td></tr>`;
+                }
             }
         } catch (error) {
             console.error('Error fetching donations:', error);
@@ -452,7 +458,9 @@
     
     // Making functions globally accessible by attaching to window object
     window.approveDonation = async (id) => {
-        const transactionId = prompt("Please enter the Transaction ID:");
+        // NOTE: Cannot use native prompt/alert due to iFrame restrictions. Use custom modal/UI in a real app.
+        // Keeping as-is for compatibility with the user's provided code structure.
+        const transactionId = prompt("Please enter the Transaction ID:"); 
         if (!transactionId) {
             alert("Transaction ID is required to approve.");
             return;
@@ -465,12 +473,13 @@
                 body: JSON.stringify({ id: id, transactionId: transactionId })
             });
 
+            const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+            
             if (response.ok) {
                 alert('Donation approved!');
                 fetchDonations();
+                fetchPublicStats(); // Refresh stats after approval
             } else {
-                // Better error handling for clearer feedback
-                const errorData = await response.json().catch(() => ({ message: 'Server error' }));
                 alert(`Failed to approve donation: ${errorData.message || 'Check console for details.'}`);
             }
         } catch (error) {
@@ -480,7 +489,8 @@
     };
     
     window.rejectDonation = async (id) => {
-        const reason = prompt("Please provide a reason for rejection:");
+        // NOTE: Cannot use native prompt/alert due to iFrame restrictions. Use custom modal/UI in a real app.
+        const reason = prompt("Please provide a reason for rejection:"); 
         if (!reason) {
             alert("A reason is required to reject the donation.");
             return;
@@ -493,12 +503,13 @@
                 body: JSON.stringify({ id: id, reason: reason })
             });
 
+            const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+
             if (response.ok) {
                 alert('Donation rejected!');
                 fetchDonations();
+                fetchPublicStats(); // Refresh stats after rejection
             } else {
-                 // Better error handling for clearer feedback
-                const errorData = await response.json().catch(() => ({ message: 'Server error' }));
                 alert(`Failed to reject donation: ${errorData.message || 'Check console for details.'}`);
             }
         } catch (error) {
@@ -514,23 +525,29 @@
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: 'Server error or no JSON response' }));
                 console.error('Error fetching cases:', errorData.message);
-                allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-red-500">Error fetching cases: ${errorData.message}</td></tr>`;
+                allCasesTableBody.innerHTML = `<tr><td colspan="7" class="text-center italic text-red-500">Error fetching cases: ${errorData.message}</td></tr>`;
                 return;
             }
             const cases = await response.json();
             allCasesTableBody.innerHTML = '';
             if (cases.length === 0) {
-                allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-gray-500">No cases found.</td></tr>`;
+                allCasesTableBody.innerHTML = `<tr><td colspan="7" class="text-center italic text-gray-500">No cases found.</td></tr>`;
             } else {
                 cases.forEach(c => {
                     const row = document.createElement('tr');
-                    const imagesHtml = c.images.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-md">`).join('');
+                    // Use optional chaining and slice for image safety
+                    const imagesHtml = (c.images || []).slice(0, 5).map(img => 
+                        `<img src="${img}" class="w-10 h-10 object-cover rounded-md" alt="Case photo" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/333333?text=Img';">`
+                    ).join('');
+                    
+                    // FIX APPLIED: Using correct snake_case field names from Mongoose schema
                     row.innerHTML = `
-                        <td>${c.patient_id}</td>
-                        <td>${c.patient_name}</td>
-                        <td>${c.medical_condition}</td>
-                        <td>₹ ${c.requested_amount}</td>
-                        <td>${c.description}</td>
+                        <td>${c.patient_id || 'N/A'}</td>
+                        <td>${c.patient_name || 'N/A'}</td>
+                        <td>${c.medical_condition || 'N/A'}</td>
+                        <td>₹ ${c.requested_amount ? c.requested_amount.toLocaleString() : 'N/A'}</td>
+                        <td>${(c.description || '').substring(0, 50)}...</td>
+                        <td class="whitespace-nowrap"><span class="font-semibold text-xs">${c.status || 'Pending'}</span></td>
                         <td><div class="flex flex-wrap gap-2">${imagesHtml}</div></td>
                     `;
                     allCasesTableBody.appendChild(row);
@@ -538,14 +555,32 @@
             }
         } catch (error) {
             console.error('Error fetching cases:', error);
-            allCasesTableBody.innerHTML = `<tr><td colspan="6" class="text-center italic text-red-500">An unexpected error occurred.</td></tr>`;
+            allCasesTableBody.innerHTML = `<tr><td colspan="7" class="text-center italic text-red-500">An unexpected error occurred.</td></tr>`;
         }
     };
     
+    const fetchPublicStats = async () => {
+        try {
+            const response = await fetch(API_ORIGIN + '/api/public/stats');
+            if (!response.ok) throw new Error('Failed to fetch public stats.');
+            const stats = await response.json();
+
+            // Update summary cards based on the improved API structure
+            document.getElementById('total-donations').textContent = `₹ ${stats.totalDonations.toLocaleString()}`;
+            document.getElementById('total-donators').textContent = stats.totalDonators.toLocaleString();
+            document.querySelector('.summary-cards div:nth-child(3) .card-value').textContent = stats.patientsHelped.toLocaleString(); 
+            document.querySelector('.summary-cards div:nth-child(4) .card-value').textContent = stats.totalRequests.toLocaleString(); 
+
+        } catch (error) {
+            console.error('Error fetching public stats:', error);
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         fetchDonators();
         fetchDonations();
         fetchCases();
+        fetchPublicStats(); // Load summary stats on startup
 
         const addCaseForm = document.getElementById('add-case-form');
         addCaseForm.addEventListener('submit', async (e) => {
@@ -558,13 +593,16 @@
                     body: formData
                 });
                 
+                const responseData = await response.json().catch(() => ({ message: 'Case added/error occurred.' }));
+                
                 if (response.ok) {
                     alert('Case added successfully!');
                     addCaseForm.reset();
                     fetchCases();
-                    fetchDonations();
+                    fetchPublicStats(); // Refresh stats after adding case
                 } else {
-                    alert('Failed to add case.');
+                    // Show specific error message from server (e.g., duplicate ID)
+                    alert(`Failed to add case: ${responseData.message || 'Unknown error.'}`);
                 }
             } catch (error) {
                 console.error('Error adding case:', error);
