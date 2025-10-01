@@ -33,6 +33,7 @@ async function connectToDatabase() {
     // 2. Establish a new connection and cache it
     try {
         // Mongoose automatically handles connection pooling
+        // NOTE: This relies on process.env.MONGO_URI being set correctly in Vercel.
         const db = await mongoose.connect(process.env.MONGO_URI);
         console.log("New MongoDB connection established. 🟢");
         cachedDb = db;
@@ -229,6 +230,7 @@ app.post('/api/donater/google-register', async (req, res) => {
         
         let donator = await Donator.findOne({ email: payload.email });
         if (donator) {
+            // Success response for existing user, includes donator data
             return res.status(200).json({ message: 'Welcome back! You are already registered.', donator: donator, redirect: '/user-dashboard.html' });
         }
         
@@ -241,6 +243,7 @@ app.post('/api/donater/google-register', async (req, res) => {
         donator = await newDonator.save();
         
         console.log('New donator registered:', donator);
+        // Success response for new user, includes donator data
         res.status(200).json({ message: 'Registration successful!', donator: donator, redirect: '/user-dashboard.html' });
         
     } catch (error) {
