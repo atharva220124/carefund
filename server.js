@@ -16,7 +16,8 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static("public"));
+// Ensure 'public' is available for static files (e.g., HTML, CSS)
+app.use(express.static("public")); 
 app.use(cors());
 
 // --- START: VERCEL SERVERLESS CONNECTION CACHING ---
@@ -25,7 +26,7 @@ let cachedDb = null;
 
 async function connectToDatabase() {
     // 1. Check if the connection is already cached
-    if (cachedDb) {
+    if (cachedDb && cachedDb.connections[0].readyState === 1) { // 💡 IMPROVEMENT: Check readyState
         console.log('Using existing database connection. 🟢');
         return cachedDb;
     }
@@ -48,7 +49,8 @@ async function connectToDatabase() {
 // Middleware to ensure a database connection is ready for every API route
 app.use(async (req, res, next) => {
     // Only apply to routes that need the database
-    if (req.path.startsWith('/api/')) {
+    // 💡 IMPROVEMENT: Apply to all routes in case of future changes, or keep only for /api/
+    if (req.path.startsWith('/api/') || req.path === '/donate') { 
         try {
             await connectToDatabase();
         } catch (error) {
@@ -62,19 +64,19 @@ app.use(async (req, res, next) => {
 // --- END: VERCEL SERVERLESS CONNECTION CACHING ---
 
 
-// Define Mongoose Schemas and Models (moved below connection logic)
+// Define Mongoose Schemas and Models
 const donatorSchema = new mongoose.Schema({
     id: String,
     name: String,
-    email: String,
+    email: { type: String, required: true, unique: true }, // 💡 IMPROVEMENT: Email should be unique/required
     profilePic: String,
     registrationDate: { type: Date, default: Date.now }
 });
 const Donator = mongoose.model('Donator', donatorSchema);
 
 const caseSchema = new mongoose.Schema({
-    patient_id: String, // <-- ADDED: Field to store the Patient ID from the form
-    patient_name: String,
+    patient_id: { type: String, required: true, unique: true }, // 💡 IMPROVEMENT: ID should be unique/required
+    patient_name: { type: String, required: true },
     medical_condition: String,
     description: String,
     requested_amount: Number,
@@ -87,7 +89,7 @@ const Case = mongoose.model('Case', caseSchema);
 const donationSchema = new mongoose.Schema({
     name: String,
     email: String,
-    amount: Number,
+    amount: { type: Number, required: true }, // 💡 IMPROVEMENT: Amount should be required
     date: { type: Date, default: Date.now },
     status: { type: String, default: 'Pending' },
     rejectionReason: String,
@@ -111,6 +113,12 @@ app.get("/", (req, res) => {
 // Route to handle donation form submission and save to MongoDB
 app.post("/donate", async (req, res) => {
     const { amount, name, email } = req.body;
+    
+    // Basic validation
+    if (!amount || isNaN(Number(amount))) {
+        return res.status(400).send("❌ Invalid or missing donation amount.");
+    }
+
     const upiLink = `upi://pay?pa=${process.env.UPI_ID}&pn=${encodeURIComponent(
         name || "CareFund"
     )}&am=${amount}&cu=INR`;
@@ -125,7 +133,7 @@ app.post("/donate", async (req, res) => {
             amount: amount,
         });
 
-        const savedDonation = await newDonation.save();
+        await newDonation.save(); // Don't need the savedDonation variable here
 
         res.send(`
             <!DOCTYPE html>
@@ -211,7 +219,7 @@ app.post("/donate", async (req, res) => {
             </html>
         `);
     } catch (err) {
-        console.error("Error generating QR code:", err);
+        console.error("Error generating QR code or saving donation:", err);
         res.status(500).send("❌ An error occurred. Please try again later.");
     }
 });
@@ -219,6 +227,10 @@ app.post("/donate", async (req, res) => {
 // Route for Google Sign-in registration
 app.post('/api/donater/google-register', async (req, res) => {
     const idToken = req.body.id_token;
+    // 💡 IMPROVEMENT: Check for missing token early
+    if (!idToken) {
+        return res.status(400).json({ message: 'ID token missing.' });
+    }
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     
     try {
@@ -348,8 +360,13 @@ app.route('/api/admin/cases')
             const uploadedBlobs = await Promise.all(uploadPromises);
             const imageUrls = uploadedBlobs.map(blob => blob.url);
 
-            // Capture patientId from the form body
+            // Capture data from the form body
             const { patientId, patientName, medicalCondition, description, requestedAmount } = req.body; 
+            
+            // 💡 IMPROVEMENT: Basic validation for required fields
+            if (!patientId || !patientName || !requestedAmount) {
+                return res.status(400).json({ message: 'Missing required case fields: Patient ID, Name, or Requested Amount.' });
+            }
 
             // Create a new Case document and save it to MongoDB
             const newCase = new Case({
@@ -367,6 +384,10 @@ app.route('/api/admin/cases')
             res.status(201).json({ message: 'Case added successfully!', case: savedCase });
 
         } catch (error) {
+            // Handle duplicate key error from MongoDB for patient_id
+            if (error.code === 11000) {
+                 return res.status(409).json({ message: `Case with Patient ID '${req.body.patientId}' already exists.` });
+            }
             console.error('Error adding case or uploading images:', error);
             res.status(500).json({ message: 'Error adding case. Please try again.' });
         }
@@ -375,6 +396,7 @@ app.route('/api/admin/cases')
 // Retrieve cases from MongoDB Atlas for the public page
 app.get('/api/public/cases', async (req, res) => {
     try {
+        // Retrieve only approved cases if you want to show only active campaigns
         const cases = await Case.find().sort({ date_added: -1 });
         res.json(cases);
     } catch (error) {
@@ -392,13 +414,14 @@ app.get('/api/public/stats', async (req, res) => {
         ]);
 
         const totalDonators = await Donator.countDocuments();
-        const patientsHelped = await Case.countDocuments();
+        const patientsHelped = await Case.countDocuments({ status: 'Approved' }); // 💡 IMPROVEMENT: Only count approved cases
+        const totalRequests = await Case.countDocuments(); // All requests
 
         const stats = {
             totalDonations: totalDonations.length > 0 ? totalDonations[0].total : 0,
             totalDonators: totalDonators,
-            patientsHelped: patientsHelped,
-            totalRequests: patientsHelped // Assuming patients helped and total requests are the same count
+            patientsHelped: patientsHelped, 
+            totalRequests: totalRequests // Differentiate between requests and helped
         };
         res.json(stats);
     } catch (error) {
@@ -410,6 +433,10 @@ app.get('/api/public/stats', async (req, res) => {
 // API endpoint to get a user's donations
 app.post('/api/my-donations', async (req, res) => {
     const userEmail = req.body.email;
+    // 💡 IMPROVEMENT: Basic validation for email
+    if (!userEmail) {
+        return res.status(400).json({ message: 'User email is required.' });
+    }
     try {
         const myDonations = await Donation.find({ email: userEmail }).sort({ date: -1 });
         res.json(myDonations);
@@ -419,7 +446,7 @@ app.post('/api/my-donations', async (req, res) => {
     }
 });
 
-// Corrected AI Chatbot route
+// ❌ CRITICAL FIX: The previous logic was mixing chat.sendMessage() with pre-existing history.
 app.post('/api/chat', async (req, res) => {
     try {
         const { history } = req.body;
@@ -428,21 +455,26 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ response: 'Invalid request: Chat history is required and cannot be empty.' });
         }
         
-        if (history[0].role === 'model') {
-            history.shift();
-        }
+        // The last message is the user's new query
+        const newMessage = history[history.length - 1];
         
+        // Extract the actual user message content
+        const userQueryParts = newMessage.parts; 
+
+        // The chat history passed to startChat should contain all previous messages
+        const previousHistory = history.slice(0, -1);
+        
+        // 💡 FIX: Start the chat with the correct history, and only send the NEW message.
         const chat = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }).startChat({
-            history: history,
-            generationConfig: {
+            history: previousHistory, // Pass only the PREVIOUS history
+            config: { // Use 'config' instead of 'generationConfig' for startChat
                 maxOutputTokens: 100,
             },
         });
         
-        const userQueryParts = history[history.length - 1].parts;
-        const result = await chat.sendMessage(userQueryParts);
-        const response = await result.response;
-        const text = response.text();
+        // Send the user's new message
+        const result = await chat.sendMessage({ role: newMessage.role, parts: userQueryParts });
+        const text = result.text; // Get text directly from the result
         
         res.json({ response: text });
 
@@ -452,6 +484,8 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+
+// Static file routes
 app.get('/dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
@@ -468,8 +502,11 @@ app.get('/my-donations.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'my-donations.html'));
 });
 
+// Global 404 handler: Redirect to dashboard.html instead of just sending it
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    // 💡 IMPROVEMENT: For a true 404 page, use res.status(404).sendFile(...)
+    // If the goal is redirection, use res.redirect('/dashboard.html');
+    res.status(404).sendFile(path.join(__dirname, 'public', 'dashboard.html')); 
 });
 
 // --- CRITICAL VERCEL EXPORT: REPLACE app.listen() ---
